@@ -1,2 +1,2 @@
 # haj-system
-Just to do the audit of the inventory by serial number and asset number of the devices 
+update the client with walking path from hotel to open door, Hotel admin will draw the path from hotel to all doors
