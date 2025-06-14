@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masjid Al Nabawi Doors Status</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+       <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href='https://fonts.googleapis.com/css?family=Libre Barcode 128' rel='stylesheet'>
+    <link rel="stylesheet" href="navbar.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<script src="navbar.js" defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+/* Logout Button with Icon */
+#logoutButton {
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  background-color: #13a137;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  z-index: 11110;
+}
+
+#logoutButton i {
+  font-size: 1.5rem; /* Adjust icon size */
+}
+
+#logoutButton:hover {
+  background-color: #ff4e50;
+  transform: scale(1.1);
+}
+
+#logoutButton:focus {
+  outline: none;
+}
+/* Style for the refresh button */
+#refreshButton {
+   position: fixed;
+  top: 0px;
+  left:  0px;
+  background-color: #eddede; /* Transparent background */
+   border: none;
+  padding: 10px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  z-index: 11110;
+}
+
+#refreshButton:hover {
+  transform: scale(1.2); /* Slightly increase the size on hover */
+  color: #4CAF50; /* Change color on hover */
+}
+ /* Navbar Styling */
+  nav {
+      background-color: #333;
+      padding: 10px 0;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1111;
+    }
+
+    nav .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      display: flex;
+    }
+
+    nav ul li {
+      margin: 0 20px;
+    }
+
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      font-size: 18px;
+      display: inline-block;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, transform 0.3s ease, color 0.3s ease;
+    }
+
+    /* Navbar links hover effects */
+    nav ul li a:hover {
+      background-color: #575757;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    /* Active link effect */
+    nav ul li a.active {
+      background-color: #444;
+      color: #ffcc00;
+      transform: translateY(-2px);
+    }
+
+    /* Responsive Design */
+    @media screen and (max-width: 600px) {
+      nav ul {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: #333;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      nav ul li {
+        margin: 10px 0;
+      }
+
+      nav .menu-toggle {
+        display: block;
+        color: white;
+        cursor: pointer;
+        padding: 10px;
+        margin-top: -8px;
+      }
+      #refreshButton {
+        left: 80px;
+      }
+     
+    }
+
+    /* Animation for links */
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    nav ul li a {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    /* Staggered Animation Delays */
+    nav ul li a:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    nav ul li a:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    nav ul li a:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+        .container {
+            max-width: 1200px;
+            margin: 100px 20px;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .map-container {
+            height: 600px;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+     
+        /* Update legend styles */
+        .legend {
+           position: absolute;
+  
+  right: 20px;
+  background: white;
+    background-color: white;
+    background-image: none;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  justify-content: center;
+  width: 86%;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #11150e80;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+
+        .legend-color.open {
+            background-color: #4CAF50 !important; /* Green for open */
+        }
+
+        .legend-color.closed {
+            background-color: #f44336 !important; /* Red for closed */
+        }
+
+        .legend-color.soon-open {
+            background-color: #87CEEB !important; /* Light blue for soon open */
+        }
+
+        .legend-color.soon-close {
+            background-color: #FFB6C1 !important; /* Light red for soon close */
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            color: #0c0c0c
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .filter-group select, .filter-group input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .marker-content {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        .marker-content.open {
+            background-color: #4CAF50; /* Green for open */
+        }
+        .marker-content.closed {
+            background-color: #f44336; /* Red for closed */
+        }
+        .marker-content.soon-open {
+            background-color: #87CEEB; /* Light blue for soon open */
+        }
+        .marker-content.soon-close {
+            background-color: #FFB6C1; /* Light red for soon close */
+        }
+        .map-popup {
+            max-width: 250px;
+        }
+        .map-popup h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .status-open {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .status-closed {
+            background-color: #f44336;
+            color: white;
+        }
+        .status-soon-open {
+            background-color: #87CEEB;
+            color: black;
+        }
+        .status-soon-close {
+            background-color: #FFB6C1;
+            color: black;
+        }
+        .scheduled-time {
+            color: #666;
+            font-style: italic;
+            margin: 5px 0;
+        }
+        /* Add new styles for route information */
+        .route-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 10px;
+            position: absolute;
+            top: 120px;
+            left: 20px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        .route-info h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .route-info p {
+            margin: 5px 0;
+            color: #555;
+        }
+        .route-info .time {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .route-info .distance {
+            font-weight: bold;
+            color: #2196F3;
+        }
+        .route-info .instructions {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .route-info .instruction {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .route-info .instruction:last-child {
+            border-bottom: none;
+        }
+        .route-info .close-btn {
+            position: absolute;
+  top: -6px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+  padding: 5px 10px;
+        }
+        .closest-door {
+            background: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        /* Add new styles for navigation */
+        .navigation-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .navigation-btn:hover {
+            background-color: #45a049;
+        }
+        .navigation-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #stopNavigationBtn {
+            background-color: #f44336;
+        }
+        #stopNavigationBtn:hover {
+            background-color: #da190b;
+        }
+        .current-step {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 10px;
+            margin: 5px 0;
+        }
+       .location-switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: #2196F3;
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+.location-label2 {
+    font-weight: bold;
+    color: #333;
+}
+
+        /* Add loading overlay styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        .loading-text {
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+/* Button Styling */
+button {
+  background-color: #000;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 10px;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+  background-color: #0a0a0a59;
+  transform: scale(1.05);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+button:focus {
+  outline: none;
+  border: 2px solid #ff7e5f;
+}
+
+button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
+/* Input Fields */
+input[type="text"], select {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: 1px solid #ff7e5f;
+  font-size: 1rem;
+  width: 80%;
+  max-width: 400px;
+  transition: border-color 0.3s ease-in-out;
+}
+
+input[type="text"]:focus, select:focus {
+  border-color: #ff4e50;
+  outline: none;
+}
+
+ /* Add new styles for location switch */
+        .location-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            gap: 10px;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: #3d8c40;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        .location-label {
+            font-size: 14px;
+            color: #666;
+            transition: color 0.3s;
+        }
+        .location-label.active {
+            color: #2196F3;
+            font-weight: bold;
+        }
+        #hotelControls {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        #hotelSelect {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+          /* Image Container for Map */
+        .map-image-container {
+            position: relative;
+            margin: 10px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .map-image-container:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Image Zoom Effect */
+        .zoom-effect {
+            transition: transform 0.5s ease;
+        }
+
+        .zoom-effect:hover {
+            transform: scale(1.05);
+        }
+
+        /* Image Loading Animation */
+        @keyframes imageLoad {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .image-loading {
+            animation: imageLoad 0.5s ease-out forwards;
+        }
+        #pathSegments {
+    max-width: 700px;
+    margin: 30px auto 0 auto;
+    border-radius: 18px;
+    padding: 24px 16px;
+      display: flex;
+  flex-direction: column; /* stack items vertically */
+  align-items: center;    /* center items horizontally */
+  justify-content: center; /* center items vertically if container has height */
+  text-align: center;      /* center text inside elements */
+}
+
+#pathSegments .path-segment {
+    margin-bottom: 32px;
+    padding: 16px 0;
+    border-bottom: 1px solid #e0e0e0;
+    transition: background 0.3s;
+}
+
+#pathSegments .path-segment:last-child {
+    border-bottom: none;
+}
+
+#pathSegments .path-segment img {
+    width: 100%;
+    max-width: 600px;
+    height: 260px;
+    object-fit: contain;         /* Show the whole image */
+    object-position: center center;
+    border-radius: 14px;
+    margin: 12px 0 8px 0;
+    display: block;
+    opacity: 0;
+    animation: segmentImgIn 0.7s cubic-bezier(.4,2,.3,1) forwards;
+}
+
+#pathSegments .path-segment img:hover {
+    transform: scale(1.04) rotate(-1deg);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    z-index: 2;
+}
+
+@keyframes segmentImgIn {
+    from { opacity: 0; transform: translateY(40px) scale(0.98);}
+    to   { opacity: 1; transform: translateY(0) scale(1);}
+}
+
+#pathSegments .path-segment h6 {
+    font-size: 1.1rem;
+    color: #1a2a3a;
+    margin-bottom: 8px;
+    margin-top: 0;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            <ul>
+                <li><a href="client-dashboard.html">Home</a></li>
+                <li><a href="clientWalkToMasjid.html">Macca Map</a></li>
+                <li><a href="clientWalkToMasjid2.html">Medina Map</a></li>
+            </ul>
+        </div>
+      </nav>
+    <button id="logoutButton" onclick="logout()"">
+        <i class="fas fa-sign-out-alt"></i> <!-- Font Awesome logout icon -->
+      </button>
+      <button id="refreshButton" class="refresh-icon">
+        <i class="fas fa-sync-alt"></i> <!-- Font Awesome refresh icon -->
+      </button>
+    <div id="home">
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Finding closest door...</div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1>Masjid Al Nabawi Doors Status</h1>
+            <p>Check the status of all doors to plan your visit</p>
+        </div>
+        <div class="location-toggle">
+            <span class="location-label active" id="clientLocationLabel">Your Location</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="locationToggle">
+                <span class="toggle-slider"></span>
+            </label>
+            <span class="location-label" id="hotelLocationLabel">From Hotel</span>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="statusFilter">Door Status:</label>
+                <select id="statusFilter">
+                    <option value="all">All Statuses</option>
+                    <option value="open">Open</option>
+                    <option value="closed">Closed</option>
+                    <option value="soon open">Soon Open</option>
+                    <option value="soon close">Soon Close</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="searchInput">Search Doors:</label>
+                <input type="text" id="searchInput" placeholder="Search by name or number...">
+            </div>
+            <div class="location-switch">
+    <span class="location-label">Masjid AL Nabawi</span>
+    <label class="switch">
+        <input type="checkbox" id="locationToggle2">
+        <span class="slider"></span>
+    </label>
+    <span class="location-label">Masjid AL Haram</span>
+</div>
+
+            <button onclick="findClosestOpenDoor()" class="find-closest-btn">Find Closest Open Door</button>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color open"></div>
+                    <span>Open</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color closed"></div>
+                    <span>Closed</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color soon-open"></div>
+                    <span>Soon Open</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color soon-close"></div>
+                    <span>Soon Close</span>
+                </div>
+            </div>
+        </div>
+
+         <div class="row">
+            
+            <div class="col-md-4" id="mapAndPathSegments" style="display: none;">
+                <div id="navigationStatus"></div>
+                <div id="pathSegments" style="max-height: 400px; overflow-y: auto;">
+
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+  <button id="prevBtn">⟵ Previous</button>
+  <button id="nextBtn">Next ⟶</button>
+</div>
+            </div>     
+        </div>
+        <div id="routeInfo" class="route-info" style="display: none;">
+            <button class="close-btn" onclick="hideRouteInfo()">×</button>
+            <h3>Route Information</h3>
+            <p>To: <span id="doorName"></span></p>
+            <p>Distance: <span id="routeDistance" class="distance"></span></p>
+            <p>Estimated Walking Time: <span id="walkingTime" class="time"></span></p>
+            <div class="instructions" id="routeInstructions"></div>
+            <button id="startNavigationBtn" class="navigation-btn" onclick="startNavigation()" style="display: none;">Start Navigation</button>
+            <button id="stopNavigationBtn" class="navigation-btn" onclick="stopNavigation()" style="display: none;">Stop Navigation</button>
+        </div>
+    </div>
+
+    <div id="loadingMessage" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 1000;">
+        <p>Finding closest door...</p>
+    </div>
+
+    <script>
+        let map;
+        let markers = [];
+        let routeLayer;
+        const lon = localStorage.getItem('latitude')
+        const lat = localStorage.getItem('longitude')
+        const masjidLocation =  [24.4672, 39.6117] // Masjid Al Nabawi coordinates
+        const clientLocation = [lon, lat]; // Default client location
+        let doors = [];
+        let isHotelMode = false; // Track location mode
+        let clientMarker = null; // Add this line for the client marker
+        let watchId = null; // Add this line for the geolocation watch ID
+        let isNavigating = false; // Add this line to track navigation state
+        let currentStepIndex = 0; // Add this line to track current step
+        let isFirstTime = true;
+        let refreshInterval;
+ let selectedHotel = null;
+         let currentPath;
+         let currentPointIndex = -1;
+         let pathPoints = [];
+         let pathLayer;
+
+window.addEventListener('load', function() {
+    const locationToggle2 = document.getElementById('locationToggle2');
+    const slider = document.querySelector('.slider');
+
+    if (!locationToggle2 || !slider) return;
+
+    // ✅ Set the toggle OFF for this page
+    locationToggle2.checked = false;
+
+    updateLocationMode();
+
+    locationToggle2.addEventListener('change', function(e) {
+        // Redirect to the other page based on toggle state
+        if (e.target.checked) {
+            window.location.href = 'clientWalkToMasjid.html';
+        }
+    });
+
+    function updateLocationMode() {
+        const locationLabels = document.querySelectorAll('.location-label');
+        locationLabels.forEach(label => label.style.color = '#666');
+
+        // ✅ Highlight right label (Masjid Al Haram)
+        locationLabels[1].style.color = '#2196F3'; // blue
+
+        // ✅ Make slider blue
+        slider.style.backgroundColor = '#2196F3';
+    }
+});
+  // Initialize location toggle
+            const locationToggle = document.getElementById('locationToggle');
+        const findClosestBtn = document.querySelector('.find-closest-btn');
+        locationToggle.addEventListener('change', function() {
+            if (this.checked) {
+                // From Hotel
+                findClosestBtn.style.display = 'none';
+                findClosestOpenDoorToHotel();
+                // Update the Start Navigation button to use startNavigationFromHotel
+                document.getElementById('startNavigationBtn').onclick = startNavigationFromHotel;
+            } else {
+                // Your Location
+                findClosestBtn.style.display = 'block';
+
+                document.getElementById('mapAndPathSegments').style.display = 'none';
+                findClosestOpenDoor();
+                // Update the Start Navigation button to use startNavigation
+                document.getElementById('startNavigationBtn').onclick = startNavigation;
+            }
+        });
+                   function loadSelectedHotelFromLocalStorage() {
+        const hotelLatitude = localStorage.getItem('hotelLatitude');
+        const hotelLongitude = localStorage.getItem('hotelLongitude');
+        const hotelId = "6844e2596e4bf672d629e738"; // Get hotelId from localStorage
+
+        if (hotelLatitude && hotelLongitude && hotelId) {
+            // Center the map on the hotel location
+            const hotelLatLng = [parseFloat(hotelLatitude), parseFloat(hotelLongitude)];
+            map.setView(hotelLatLng, 15);
+
+            // Add a marker for the hotel
+                    if (clientMarker) {
+                map.removeLayer(clientMarker);
+            }
+            clientMarker = L.marker(hotelLatLng, {
+                icon: L.divIcon({
+                    className: 'hotel-marker',
+                    html: '<div style="background-color: #2196F3; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">H</div>',
+                    iconSize: [24, 24]
+                })
+            }).addTo(map);
+
+            // Find the closest open door
+            findClosestOpenDoorToHotel(hotelLatLng);
+        } else {
+            console.error('Hotel information not found in localStorage');
+            alert('Hotel information not found. Please select a hotel first.');
+        }
+    }
+
+     
+
+    //   async function findClosestDoorFromHotel(hotelCoordinates) {
+    //     try {
+    //         // Get all doors
+    //         const doorsResponse = await fetch('https://my-node-backend-fcdy.onrender.com/api/doors');
+    //         if (!doorsResponse.ok) throw new Error('Failed to fetch doors');
+    //         const doors = await doorsResponse.json();
+
+    //         // Find all open doors
+    //         const openDoors = doors.filter(door => door.status === 'open');
+
+    //         if (openDoors.length === 0) {
+    //             alert('No open doors found');
+    //             return;
+    //         }
+
+    //         // Get all walking paths for this hotel
+    //         const hotelId = "6844e2596e4bf672d629e738"; // Get hotelId from localStorage
+    //         const pathsResponse = await fetch(`https://my-node-backend-fcdy.onrender.com/api/walking-paths/hotel/${hotelId}`);
+    //         if (!pathsResponse.ok) throw new Error('Failed to fetch walking paths');
+    //         const paths = await pathsResponse.json();
+
+    //         // If no paths found, use direct distance calculation
+    //         if (!paths || paths.length === 0) {
+    //             console.log('No saved paths found, using direct distance calculation');
+    //             const doorDistances = openDoors.map(door => ({
+    //                 door,
+    //                 distance: calculateDistance(
+    //                     hotelCoordinates[0], hotelCoordinates[1],
+    //                     door.coordinates.lat, door.coordinates.lon
+    //                 )
+    //             }));
+
+    //             doorDistances.sort((a, b) => a.distance - b.distance);
+    //             return doorDistances[0].door;
+    //         }
+
+    //         // Filter paths to only include those for open doors
+    //         const validPaths = paths.filter(path => {
+    //             const doorName = path.destination.name;
+    //             return openDoors.some(door => door.name === doorName);
+    //         });
+
+    //         if (validPaths.length === 0) {
+    //             console.log('No valid paths found for open doors, using direct distance calculation');
+    //             const doorDistances = openDoors.map(door => ({
+    //                 door,
+    //                 distance: calculateDistance(
+    //                     hotelCoordinates[0], hotelCoordinates[1],
+    //                     door.coordinates.lat, door.coordinates.lon
+    //                 )
+    //             }));
+
+    //             doorDistances.sort((a, b) => a.distance - b.distance);
+    //             return doorDistances[0].door;
+    //         }
+
+    //         // For each path, calculate the total distance (hotel to path start + path distance)
+    //         const pathDistances = validPaths.map(path => {
+    //             const startPoint = path.coordinates[0];
+    //             const distanceToPath = calculateDistance(
+    //                 hotelCoordinates[0], hotelCoordinates[1],
+    //                 startPoint.lat, startPoint.lon
+    //             );
+    //             return {
+    //                 path,
+    //                 totalDistance: distanceToPath + path.distance
+    //             };
+    //         });
+
+    //         // Sort by total distance and get the closest path
+    //         pathDistances.sort((a, b) => a.totalDistance - b.totalDistance);
+    //         const closestPath = pathDistances[0].path;
+
+    //         // Find the corresponding door by name
+    //         const closestDoor = openDoors.find(door => door.name === closestPath.destination.name);
+            
+    //         // Draw the path on the map
+    //         if (closestPath && closestPath.coordinates) {
+    //             const pathCoordinates = closestPath.coordinates.map(point => ({
+    //                 lat: point.lat,
+    //                 lng: point.lon
+    //             }));
+
+    //             // Remove existing path if any
+    //             if (currentPath) {
+    //                 map.removeLayer(currentPath);
+    //             }
+
+    //             // Draw new path
+    //             currentPath = L.polyline(pathCoordinates, {
+    //                 color: 'blue',
+    //                 weight: 3,
+    //                 opacity: 0.7
+    //             }).addTo(map);
+
+    //             // Fit map to show the entire path
+    //             map.fitBounds(currentPath.getBounds());
+    //         }
+
+    //         return closestDoor;
+
+    //         } catch (error) {
+    //             console.error('Error finding closest door:', error);
+    //         // Fallback to direct distance calculation
+    //         const doorDistances = openDoors.map(door => ({
+    //             door,
+    //             distance: calculateDistance(
+    //                 hotelCoordinates[0], hotelCoordinates[1],
+    //                 door.coordinates.lat, door.coordinates.lon
+    //             )
+    //         }));
+
+    //         doorDistances.sort((a, b) => a.distance - b.distance);
+    //         return doorDistances[0].door;
+    //     }
+    // }
+
+        // Function to calculate distance between two points
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius of the earth in km
+        const dLat = deg2rad(lat2 - lat1);
+        const dLon = deg2rad(lon2 - lon1);
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const d = R * c; // Distance in km
+        return d;
+    }
+
+      
+    // Function to convert degrees to radians
+    function deg2rad(deg) {
+        return deg * (Math.PI / 180);
+    }
+
+        function initMap() {
+            map = L.map('map').setView(clientLocation, 16);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add client location marker
+            L.marker(clientLocation)
+                .addTo(map)
+                .bindPopup('Your Location')
+                .openPopup();
+
+            // Add Masjid Al Nabawi marker
+            L.marker(masjidLocation)
+                .addTo(map)
+                .bindPopup('Masjid Al Nabawi')
+                .openPopup();
+
+            loadDoors();
+            startPolling();
+        }
+
+        async function loadDoors() {
+            try {
+                const response = await fetch('https://my-node-backend-fcdy.onrender.com/api/doors2');
+                if (!response.ok) {
+                    throw new Error('Failed to load door data');
+                }
+                const allDoors = await response.json();
+                
+                // Filter out hotel doors (doors with number 9999)
+                doors = allDoors.filter(door => door.number !== 9999);
+                
+                updateMapMarkers();
+            } catch (error) {
+                console.error('Error loading door data:', error);
+                // Show error message to user
+                alert('Unable to load door data. Please try again later.');
+            }
+        }
+
+         function updateMapMarkers() {
+            if (!map) return;
+
+            // Remove existing markers
+            markers.forEach(marker => marker.remove());
+            markers = [];
+
+            // Get the selected status filter
+            const selectedStatus = document.getElementById('statusFilter').value;
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+
+            // Filter doors based on status and search query
+            const filteredDoors = doors.filter(door => {
+                const statusMatch = selectedStatus === 'all' || door.status.toLowerCase() === selectedStatus;
+                const searchMatch = !searchQuery || 
+                    door.name.toLowerCase().includes(searchQuery) || 
+                    door.number.toString().includes(searchQuery);
+                return statusMatch && searchMatch;
+            });
+
+            filteredDoors.forEach(door => {
+                try {
+                    const marker = L.marker([door.coordinates.lat, door.coordinates.lon], {
+                        icon: L.divIcon({
+                            className: 'door-marker',
+                            html: `<div class="marker-content ${door.status === 'soon open' ? 'soon-open' : door.status === 'soon close' ? 'soon-close' : door.status === 'open' ? 'open' : 'closed'}"></div>`,
+                            iconSize: [20, 20]
+                        })
+                    });
+
+                    // Format scheduled time display
+                    let scheduledTimeDisplay = '';
+                    if (door.scheduledTime) {
+                        const scheduledDate = new Date(door.scheduledTime);
+                        const now = new Date();
+                        
+                        if (scheduledDate > now) {
+                            scheduledTimeDisplay = `<p>Scheduled Time: ${scheduledDate.toLocaleString()}</p>`;
+                        } else {
+                            scheduledTimeDisplay = '<p>Status: Now</p>';
+                        }
+                    } else if (door.status === 'open' || door.status === 'closed') {
+                        scheduledTimeDisplay = '<p>Status: Now</p>';
+                    }
+
+                    const popupContent = `
+                        <div class="door-popup">
+                            <h3>${door.name}</h3>
+                            <p>Status: ${door.status}</p>
+                            ${scheduledTimeDisplay}
+                            <p>Location: ${door.location}</p>
+                            <p>Last Update: ${new Date(door.lastUpdate).toLocaleString()}</p>
+                            <button class="show-route-btn" onclick="showRouteToDoor(${door.coordinates.lat}, ${door.coordinates.lon}, '${door.name}')">
+                                Show Route
+                            </button>
+                        </div>
+                    `;
+
+                    marker.bindPopup(popupContent);
+                    markers.push(marker);
+                    marker.addTo(map);
+                } catch (error) {
+                    console.error('Error creating marker for door:', door.name, error);
+                }
+            });
+        }
+
+        function startPolling() {
+            // Update doors every 30 seconds
+            setInterval(loadDoors, 30000);
+        }
+
+        function showRouteToDoor(lat, lon, doorName, startCoordinates = null) {
+            // Remove any existing route
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+                routeLayer = null;
+            }
+
+            // Show route information panel
+            document.getElementById('routeInfo').style.display = 'block';
+            document.getElementById('doorName').textContent = doorName;
+
+            // Use OSRM routing to get the actual route
+            const startPoint = startCoordinates ? 
+                `${startCoordinates.longitude},${startCoordinates.latitude}` :
+                `${clientLocation[1]},${clientLocation[0]}`;
+            
+            const routeUrl = `https://router.project-osrm.org/route/v1/foot/${startPoint};${lon},${lat}?overview=full&geometries=geojson&steps=true`;
+            
+            fetch(routeUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.routes || !data.routes[0]) {
+                        throw new Error('No route found');
+                    }
+
+                    const route = data.routes[0];
+                    const distance = (route.distance / 1000).toFixed(2);
+                    const duration = Math.ceil(route.duration / 60);
+
+                    // Draw the route
+                    routeLayer = L.geoJSON(route.geometry, {
+                        style: {
+                            color: '#4CAF50',
+                            weight: 6,
+                            opacity: 0.9,
+                            dashArray: '3, 6'
+                        }
+                    }).addTo(map);
+
+                    // Add start and end markers
+                    const startMarker = L.marker(
+                        startCoordinates ? 
+                            [startCoordinates.latitude, startCoordinates.longitude] :
+                            clientLocation,
+                        {
+                            icon: L.divIcon({
+                                className: 'start-marker',
+                                html: '<div style="background-color: #4CAF50; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">S</div>',
+                                iconSize: [24, 24]
+                            })
+                        }
+                    ).addTo(map);
+
+                    L.marker([lat, lon], {
+                        icon: L.divIcon({
+                            className: 'end-marker',
+                            html: '<div style="background-color: #f44336; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">E</div>',
+                            iconSize: [24, 24]
+                        })
+                    }).addTo(map);
+
+                    // Update route information
+                    document.getElementById('routeDistance').textContent = `${distance} km`;
+                    document.getElementById('walkingTime').textContent = `${duration} minutes`;
+
+                    // Add turn-by-turn instructions
+                    const instructionsDiv = document.getElementById('routeInstructions');
+                    instructionsDiv.innerHTML = '';
+                    if (route.legs && route.legs[0] && route.legs[0].steps) {
+                        route.legs[0].steps.forEach((step, index) => {
+                            const instruction = document.createElement('div');
+                            instruction.className = 'instruction';
+                            let instructionText = 'Continue walking';
+                            if (step.maneuver && step.maneuver.instruction) {
+                                instructionText = step.maneuver.instruction
+                                    .replace('Turn', 'Walk')
+                                    .replace('Continue', 'Continue walking')
+                                    .replace('onto', 'along')
+                                    .replace('Take the', 'Follow the')
+                                    .replace('exit', 'path');
+                            }
+                            instruction.innerHTML = `
+                                <strong>${index + 1}.</strong> ${instructionText}
+                                <br>
+                                <small>${(step.distance / 1000).toFixed(2)} km</small>
+                            `;
+                            instructionsDiv.appendChild(instruction);
+                        });
+                    }
+
+                    // Show the Start Navigation button
+                    document.getElementById('startNavigationBtn').style.display = 'block';
+                    document.getElementById('stopNavigationBtn').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error getting route:', error);
+                    alert('Error getting route. Please try again.');
+                });
+        }
+
+        function hideRouteInfo() {
+            if (isNavigating) {
+                stopNavigation();
+            }
+            document.getElementById('routeInfo').style.display = 'none';
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+                routeLayer = null;
+            }
+        }
+
+        async function findClosestOpenDoor() {
+            try {
+                if (isFirstTime) {
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                }
+
+                // Get all doors
+                const doorsResponse = await fetch('https://my-node-backend-fcdy.onrender.com/api/doors2');
+                if (!doorsResponse.ok) throw new Error('Failed to fetch doors');
+                const doors = await doorsResponse.json();
+
+                // Find all open doors
+                const openDoors = doors.filter(door => door.status === 'open');
+
+                if (openDoors.length === 0) {
+                    alert('No open doors found');
+                    return;
+                }
+
+                // Calculate distance to each open door and find the closest one
+                const closestDoor = openDoors.reduce((closest, door) => {
+                    const distance = calculateDistance(
+                        clientLocation[0],
+                        clientLocation[1],
+                        door.coordinates.lat,
+                        door.coordinates.lon
+                    );
+                    
+                    if (!closest || distance < closest.distance) {
+                        return { door, distance };
+                    }
+                    return closest;
+                }, null);
+
+                if (!closestDoor) {
+                    alert('Could not find the closest door');
+                    return;
+                }
+
+                // Remove any existing route
+                if (routeLayer) {
+                    map.removeLayer(routeLayer);
+                    routeLayer = null;
+                }
+
+                // Show route info panel
+                document.getElementById('routeInfo').style.display = 'block';
+                document.getElementById('doorName').textContent = closestDoor.door.name;
+                document.getElementById('routeDistance').textContent = `${closestDoor.distance.toFixed(2)} km`;
+                document.getElementById('walkingTime').textContent = `${Math.ceil(closestDoor.distance * 12)} minutes`; // Assuming 5 km/h walking speed
+
+                // Show the Start Navigation button
+                document.getElementById('startNavigationBtn').style.display = 'block';
+                document.getElementById('stopNavigationBtn').style.display = 'none';
+
+                // Clear any existing instructions
+                document.getElementById('routeInstructions').innerHTML = '';
+
+                // Use OSRM routing to get the actual route
+                const routeUrl = `https://router.project-osrm.org/route/v1/foot/${clientLocation[1]},${clientLocation[0]};${closestDoor.door.coordinates.lon},${closestDoor.door.coordinates.lat}?overview=full&geometries=geojson&steps=true`;
+                
+                const routeResponse = await fetch(routeUrl);
+                const routeData = await routeResponse.json();
+
+                if (routeData.routes && routeData.routes[0]) {
+                    const route = routeData.routes[0];
+                    
+                    // Draw the route
+                    routeLayer = L.geoJSON(route.geometry, {
+                        style: {
+                            color: '#4CAF50',
+                            weight: 6,
+                            opacity: 0.9,
+                            dashArray: '3, 6'
+                        }
+                    }).addTo(map);
+
+                    // Add start and end markers
+                    L.marker(clientLocation, {
+                        icon: L.divIcon({
+                            className: 'start-marker',
+                            html: '<div style="background-color: #4CAF50; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">S</div>',
+                            iconSize: [24, 24]
+                        })
+                    }).addTo(map);
+
+                    L.marker([closestDoor.door.coordinates.lat, closestDoor.door.coordinates.lon], {
+                        icon: L.divIcon({
+                            className: 'end-marker',
+                            html: '<div style="background-color: #f44336; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">E</div>',
+                            iconSize: [24, 24]
+                        })
+                    }).addTo(map);
+
+                    // Add turn-by-turn instructions
+                    if (route.legs && route.legs[0] && route.legs[0].steps) {
+                        route.legs[0].steps.forEach((step, index) => {
+                            const instruction = document.createElement('div');
+                            instruction.className = 'instruction';
+                            let instructionText = 'Continue walking';
+                            if (step.maneuver && step.maneuver.instruction) {
+                                instructionText = step.maneuver.instruction
+                                    .replace('Turn', 'Walk')
+                                    .replace('Continue', 'Continue walking')
+                                    .replace('onto', 'along')
+                                    .replace('Take the', 'Follow the')
+                                    .replace('exit', 'path');
+                            }
+                            instruction.innerHTML = `
+                                <strong>${index + 1}.</strong> ${instructionText}
+                                <br>
+                                <small>${(step.distance / 1000).toFixed(2)} km</small>
+                            `;
+                            document.getElementById('routeInstructions').appendChild(instruction);
+                        });
+                    }
+
+                    // Update route information with actual route distance and time
+                    document.getElementById('routeDistance').textContent = `${(route.distance / 1000).toFixed(2)} km`;
+                    document.getElementById('walkingTime').textContent = `${Math.ceil(route.duration / 60)} minutes`;
+
+                    // Fit map to show the entire route
+                    const bounds = routeLayer.getBounds();
+                    bounds.extend(clientLocation);
+                    map.fitBounds(bounds, {
+                        padding: [50, 50]
+                    });
+                }
+
+                // Highlight the closest door marker
+                const marker = markers.find(m => m.getLatLng().lat === closestDoor.door.coordinates.lat && 
+                                           m.getLatLng().lng === closestDoor.door.coordinates.lon);
+                if (marker) {
+                    marker.openPopup();
+                }
+
+                if (isFirstTime) {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    isFirstTime = false;
+
+                    // Start periodic refresh
+                    refreshInterval = setInterval(async () => {
+                        await findClosestOpenDoor();
+                    }, 30000); // Refresh every 30 seconds
+                }
+            } catch (error) {
+                console.error('Error finding closest door:', error);
+                alert('Failed to find closest door. Please try again.');
+                if (isFirstTime) {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }
+            }
+        }
+
+         // Function for routing from user's location
+        async function routeFromUserLocation(door) {
+            try {
+                if (routeLayer) {
+                    map.removeLayer(routeLayer);
+                }
+
+                document.getElementById('routeInfo').style.display = 'block';
+                document.getElementById('doorName').textContent = door.name;
+
+                // Use current user location
+                const startPoint = `${clientLocation[1]},${clientLocation[0]}`; // lon,lat
+                const endPoint = `${door.coordinates.longitude},${door.coordinates.latitude}`;
+
+                const response = await fetch(`https://router.project-osrm.org/route/v1/foot/${startPoint};${endPoint}?overview=full&geometries=geojson&steps=true`);
+                
+                if (!response.ok) {
+                    throw new Error('No route found');
+                }
+
+                const data = await response.json();
+                
+                if (data.routes && data.routes.length > 0) {
+                    const route = data.routes[0];
+                    const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+
+                    routeLayer = L.polyline(coordinates, {
+                        color: '#4CAF50',
+                        weight: 6,
+                        opacity: 0.9
+                    }).addTo(map);
+
+                    // Add markers for start and end points
+                    const startMarker = L.marker(clientLocation, {
+                        icon: L.divIcon({
+                            className: 'start-marker',
+                            html: '<div style="background-color: #4CAF50; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">S</div>',
+                            iconSize: [24, 24]
+                        })
+                    }).addTo(map);
+
+                    const endMarker = L.marker([door.coordinates.latitude, door.coordinates.longitude], {
+                        icon: L.divIcon({
+                            className: 'end-marker',
+                            html: '<div style="background-color: #f44336; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">E</div>',
+                            iconSize: [24, 24]
+                        })
+                    }).addTo(map);
+
+                    document.getElementById('routeDistance').textContent = `${(route.distance / 1000).toFixed(2)} km`;
+                    document.getElementById('walkingTime').textContent = `${Math.ceil(route.duration / 60)} minutes`;
+
+                    const instructionsDiv = document.getElementById('routeInstructions');
+                    instructionsDiv.innerHTML = route.legs[0].steps.map((step, index) => `
+                        <div class="instruction">
+                            <strong>${index + 1}.</strong> ${step.maneuver.instruction}<br>
+                            <small>${(step.distance / 1000).toFixed(2)} km</small>
+                        </div>
+                    `).join('');
+
+                    const bounds = routeLayer.getBounds();
+                    map.fitBounds(bounds, {
+                        padding: [50, 50]
+                    });
+
+                    document.getElementById('startNavigationBtn').style.display = 'block';
+                    document.getElementById('stopNavigationBtn').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error getting route from user location:', error);
+                alert('Error getting route. Please try again.');
+            }
+        }
+
+     
+        // Function to find closest door from user's location
+        async function findClosestOpenDoorFromUser() {
+            try {
+                const doorsResponse = await fetch('https://my-node-backend-fcdy.onrender.com/api/doors2');
+                if (!doorsResponse.ok) throw new Error('Failed to fetch doors');
+                const doors = await doorsResponse.json();
+
+                // Filter for open doors
+                const openDoors = doors.filter(door => door.status === 'open');
+
+                if (openDoors.length === 0) {
+                    alert('No open doors found');
+                    return;
+                }
+
+                // Calculate distances from user location to each open door
+                const doorsWithDistances = openDoors.map(door => ({
+                    door,
+                    distance: calculateDistance(
+                        clientLocation[0],
+                        clientLocation[1],
+                        door.coordinates.latitude,
+                        door.coordinates.longitude
+                    )
+                }));
+
+                // Sort by distance and get the closest door
+                doorsWithDistances.sort((a, b) => a.distance - b.distance);
+                const closestDoor = doorsWithDistances[0];
+
+                // Route from user location to the closest door
+                await useOSRMRoutingFromUser(closestDoor.door);
+
+                // Highlight the closest door marker
+                if (closestDoorMarker) {
+                    map.removeLayer(closestDoorMarker);
+                }
+                closestDoorMarker = L.marker([closestDoor.door.coordinates.latitude, closestDoor.door.coordinates.longitude], {
+                    icon: L.divIcon({
+                        className: 'closest-door-marker',
+                        html: '<div style="background-color: #FFD700; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">★</div>',
+                        iconSize: [24, 24]
+                    })
+                }).addTo(map);
+            } catch (error) {
+                console.error('Error finding closest door from user:', error);
+                alert('Error finding closest door. Please try again.');
+            }
+        }
+     // Function to route from user location using OSRM
+        async function useOSRMRoutingFromUser(door) {
+            try {
+                if (routeLayer) {
+                    map.removeLayer(routeLayer);
+                }
+
+                document.getElementById('routeInfo').style.display = 'block';
+                document.getElementById('doorName').textContent = door.name;
+
+                const startPoint = `${clientLocation[1]},${clientLocation[0]}`; // lon,lat
+                const endPoint = `${door.coordinates.longitude},${door.coordinates.latitude}`;
+
+                const response = await fetch(`https://router.project-osrm.org/route/v1/foot/${startPoint};${endPoint}?overview=full&geometries=geojson&steps=true`);
+                
+                if (!response.ok) {
+                    throw new Error('No route found');
+                }
+
+                const data = await response.json();
+                
+                if (data.routes && data.routes.length > 0) {
+                    const route = data.routes[0];
+                    const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+
+                    routeLayer = L.polyline(coordinates, {
+                        color: '#4CAF50',
+                        weight: 6,
+                        opacity: 0.9
+                    }).addTo(map);
+
+                    // Add markers for start and end points
+                    const startMarker = L.marker(clientLocation, {
+                        icon: L.divIcon({
+                            className: 'start-marker',
+                            html: '<div style="background-color: #4CAF50; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">S</div>',
+                            iconSize: [24, 24]
+                        })
+                    }).addTo(map);
+
+                    const endMarker = L.marker([door.coordinates.latitude, door.coordinates.longitude], {
+                        icon: L.divIcon({
+                            className: 'end-marker',
+                            html: '<div style="background-color: #f44336; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">E</div>',
+                            iconSize: [24, 24]
+                        })
+                    }).addTo(map);
+
+                    document.getElementById('routeDistance').textContent = `${(route.distance / 1000).toFixed(2)} km`;
+                    document.getElementById('walkingTime').textContent = `${Math.ceil(route.duration / 60)} minutes`;
+
+                    const instructionsDiv = document.getElementById('routeInstructions');
+                    instructionsDiv.innerHTML = route.legs[0].steps.map((step, index) => `
+                        <div class="instruction">
+                            <strong>${index + 1}.</strong> ${step.maneuver.instruction}<br>
+                            <small>${(step.distance / 1000).toFixed(2)} km</small>
+                        </div>
+                    `).join('');
+
+                    const bounds = routeLayer.getBounds();
+                    map.fitBounds(bounds, {
+                        padding: [50, 50]
+                    });
+
+                    document.getElementById('startNavigationBtn').style.display = 'block';
+                    document.getElementById('stopNavigationBtn').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error getting route from user location:', error);
+                alert('Error getting route. Please try again.');
+            }
+        }
+
+
+        // Add event listeners for filters
+        document.getElementById('statusFilter').addEventListener('change', updateMapMarkers);
+        document.getElementById('searchInput').addEventListener('input', updateMapMarkers);
+
+        // Add new functions for navigation
+        function startNavigation() {
+            if (isHotelMode) {
+                // In hotel mode, require path selection
+                if (!window.availablePaths || !window.availablePaths[document.getElementById('pathSelect').value]) {
+                    alert('Please select a path first');
+                    return;
+                }
+            } else {
+                // In client location mode, use direct routing
+                if (!routeLayer) {
+                    alert('Please select a door first');
+                    return;
+                }
+            }
+
+            isNavigating = true;
+            document.getElementById('startNavigationBtn').style.display = 'none';
+            document.getElementById('stopNavigationBtn').style.display = 'block';
+
+            // Create client marker if it doesn't exist
+            if (!clientMarker) {
+                clientMarker = L.marker(clientLocation, {
+                    icon: L.divIcon({
+                        className: 'client-marker',
+                        html: '<div style="background-color: #2196F3; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">Y</div>',
+                        iconSize: [24, 24]
+                    })
+                }).addTo(map);
+            }
+
+            // Start tracking client's location
+            if ("geolocation" in navigator) {
+                watchId = navigator.geolocation.watchPosition(
+                    position => {
+                        const newLat = position.coords.latitude;
+                        const newLon = position.coords.longitude;
+                        
+                        // Update client marker position
+                        clientMarker.setLatLng([newLat, newLon]);
+                        
+                        // Update client location
+                        clientLocation[0] = newLat;
+                        clientLocation[1] = newLon;
+                        
+                        // Update navigation based on mode
+                        if (isHotelMode) {
+                            updateNavigation(newLat, newLon);
+                        } else {
+                            updateDirectNavigation(newLat, newLon);
+                        }
+                        
+                        // Center map on client
+                        map.setView([newLat, newLon], map.getZoom());
+                    },
+                    error => {
+                        console.error('Error getting location:', error);
+                        alert('Error getting your location. Please make sure location services are enabled.');
+                        stopNavigation();
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by your browser');
+                stopNavigation();
+            }
+
+            // Highlight the first step
+            currentStepIndex = 0;
+            highlightCurrentStep();
+        }
+
+        function updateDirectNavigation(currentLat, currentLon) {
+            if (!isNavigating) return;
+
+            // Get the route geometry from the routeLayer
+            const routeGeometry = routeLayer.toGeoJSON().geometry;
+            const coordinates = routeGeometry.coordinates.map(coord => [coord[1], coord[0]]); // Convert to [lat, lon]
+
+            // Find the closest point on the route
+            let closestPointIndex = 0;
+            let minDistance = Infinity;
+
+            for (let i = 0; i < coordinates.length; i++) {
+                const distance = calculateDistance(
+                    currentLat, currentLon,
+                    coordinates[i][0], coordinates[i][1]
+                );
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestPointIndex = i;
+                }
+            }
+
+            // Update current step if we've moved to a new segment
+            if (closestPointIndex > currentStepIndex) {
+                currentStepIndex = closestPointIndex;
+                highlightCurrentStep();
+            }
+
+            // Calculate distance to destination (last point in route)
+            const destination = coordinates[coordinates.length - 1];
+            const distanceToDestination = calculateDistance(
+                currentLat, currentLon,
+                destination[0], destination[1]
+            );
+
+            // Update distance display
+            document.getElementById('routeDistance').textContent = `${distanceToDestination.toFixed(2)} km`;
+
+            // Check if we've reached the destination
+            if (distanceToDestination < 0.01) { // Within 10 meters of destination
+                stopNavigation();
+                alert('You have reached your destination!');
+            }
+        }
+
+        function stopNavigation() {
+            isNavigating = false;
+            document.getElementById('startNavigationBtn').style.display = 'block';
+            document.getElementById('stopNavigationBtn').style.display = 'none';
+
+            // Stop tracking location
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+
+            // Remove client marker
+            if (clientMarker) {
+                map.removeLayer(clientMarker);
+                clientMarker = null;
+            }
+
+            // Remove step highlighting
+            const instructions = document.getElementById('routeInstructions').getElementsByClassName('instruction');
+            for (let i = 0; i < instructions.length; i++) {
+                instructions[i].classList.remove('current-step');
+            }
+
+            // Stop the refresh interval
+            stopRefresh();
+        }
+
+        function updateNavigation(currentLat, currentLon) {
+            if (!isNavigating) return;
+
+            const path = window.availablePaths[document.getElementById('pathSelect').value];
+            const steps = path.coordinates;
+
+            // Find the closest point on the path
+            let closestPointIndex = 0;
+            let minDistance = Infinity;
+
+            for (let i = 0; i < steps.length; i++) {
+                const distance = calculateDistance(
+                    currentLat, currentLon,
+                    steps[i].lat, steps[i].lon
+                );
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestPointIndex = i;
+                }
+            }
+
+            // Update current step if we've moved to a new segment
+            if (closestPointIndex > currentStepIndex) {
+                currentStepIndex = closestPointIndex;
+                highlightCurrentStep();
+            }
+
+            // Calculate distance to destination
+            const destination = steps[steps.length - 1];
+            const distanceToDestination = calculateDistance(
+                currentLat, currentLon,
+                destination.lat, destination.lon
+            );
+
+            // Update distance display
+            document.getElementById('routeDistance').textContent = `${distanceToDestination.toFixed(2)} km`;
+
+            // Check if we've reached the destination
+            if (distanceToDestination < 0.01) { // Within 10 meters of destination
+                stopNavigation();
+                alert('You have reached your destination!');
+            }
+        }
+
+        function highlightCurrentStep() {
+            const instructions = document.getElementById('routeInstructions').getElementsByClassName('instruction');
+            for (let i = 0; i < instructions.length; i++) {
+                instructions[i].classList.remove('current-step');
+            }
+            if (instructions[currentStepIndex]) {
+                instructions[currentStepIndex].classList.add('current-step');
+            }
+        }
+
+        // Add function to stop the refresh interval
+        function stopRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+            isFirstTime = true; // Reset for next time
+        }
+
+        // Initialize the map when the page loads
+        window.onload = initMap;
+
+        async function findClosestOpenDoorToHotel() {
+            try {
+                if (isFirstTime) {
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                }
+
+                // Get hotel coordinates from localStorage
+                const hotelLatitude = parseFloat(localStorage.getItem('hotelLatitude'));
+                const hotelLongitude = parseFloat(localStorage.getItem('hotelLongitude'));
+                const hotelId = "6844e2596e4bf672d629e738"; // Get hotelId from localStorage
+
+                if (isNaN(hotelLatitude) || isNaN(hotelLongitude)) {
+                    throw new Error('Hotel coordinates not found in localStorage');
+                }
+
+                // Get all doors
+                const doorsResponse = await fetch('https://my-node-backend-fcdy.onrender.com/api/doors2');
+                if (!doorsResponse.ok) throw new Error('Failed to fetch doors');
+                const doors = await doorsResponse.json();
+
+                // Find all open doors
+                const openDoors = doors.filter(door => door.status === 'open');
+
+                if (openDoors.length === 0) {
+                    alert('No open doors found');
+                    return;
+                }
+
+                // Get walking paths for this hotel
+                const pathsResponse = await fetch(`https://my-node-backend-fcdy.onrender.com/api/walking-paths/hotel/${hotelId}`);
+                if (!pathsResponse.ok) throw new Error('Failed to fetch walking paths');
+                const paths = await pathsResponse.json();
+                console.log('Walking paths:', paths);
+
+                // Find the closest door with a valid path
+                let closestDoor = null;
+                let shortestPath = null;
+                let shortestDistance = Infinity;
+
+                for (const door of openDoors) {
+                    const path = paths.find(p => p.destination.name === door.name);
+                    if (path) {
+                        const distance = path.distance;
+                        if (distance < shortestDistance) {
+                            shortestDistance = distance;
+                            closestDoor = door;
+                            shortestPath = path;
+                        }
+                    }
+                }
+
+                // If no path found, use direct distance calculation
+                if (!closestDoor) {
+                    closestDoor = openDoors.reduce((closest, door) => {
+                        const distance = calculateDistance(
+                            hotelLatitude,
+                            hotelLongitude,
+                            door.coordinates.lat,
+                            door.coordinates.lon
+                        );
+                        return (!closest || distance < closest.distance) ? { door, distance } : closest;
+                    }, null).door;
+                }
+
+                // Remove any existing route
+                if (routeLayer) {
+                    map.removeLayer(routeLayer);
+                    routeLayer = null;
+                }
+
+                // Show route info panel
+                document.getElementById('routeInfo').style.display = 'block';
+                document.getElementById('doorName').textContent = closestDoor.name;
+
+                if (shortestPath) {
+                    // Use the saved walking path
+                    const pathCoordinates = shortestPath.coordinates.map(point => ({
+                        lat: point.lat,
+                        lng: point.lon
+                    }));
+
+                    // Draw the path
+                    routeLayer = L.polyline(pathCoordinates, {
+                        color: '#4CAF50',
+                        weight: 6,
+                        opacity: 0.9,
+                        dashArray: '3, 6'
+                    }).addTo(map);
+
+                    // Add start and end markers
+                    L.marker([hotelLatitude, hotelLongitude], {
+                        icon: L.divIcon({
+                            className: 'start-marker',
+                            html: '<div style="background-color: #4CAF50; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">S</div>',
+                            iconSize: [24, 24]
+                        })
+                    }).addTo(map);
+
+                    L.marker([closestDoor.coordinates.lat, closestDoor.coordinates.lon], {
+                        icon: L.divIcon({
+                            className: 'end-marker',
+                            html: '<div style="background-color: #f44336; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">E</div>',
+                            iconSize: [24, 24]
+                        })
+                    }).addTo(map);
+
+                    // Update route information with the correct distance
+                    document.getElementById('routeDistance').textContent = `${shortestPath.distance.toFixed(2)} km`;
+                    document.getElementById('walkingTime').textContent = `${shortestPath.estimatedTime} minutes`;
+
+                    // Add path information
+                    const instructionsDiv = document.getElementById('routeInstructions');
+                    instructionsDiv.innerHTML = `
+                        <div class="instruction">
+                            <strong>Path:</strong> ${shortestPath.name || 'Unnamed Path'}<br>
+                            <small>${shortestPath.description || 'No description available'}</small>
+                        </div>
+                    `;
+                } else {
+                    // Use OSRM routing
+                    const routeUrl = `https://router.project-osrm.org/route/v1/foot/${hotelLongitude},${hotelLatitude};${closestDoor.coordinates.lon},${closestDoor.coordinates.lat}?overview=full&geometries=geojson&steps=true`;
+                    
+                    const routeResponse = await fetch(routeUrl);
+                    const routeData = await routeResponse.json();
+
+                    if (routeData.routes && routeData.routes[0]) {
+                        const route = routeData.routes[0];
+                        
+                        // Draw the route
+                        routeLayer = L.geoJSON(route.geometry, {
+                            style: {
+                                color: '#4CAF50',
+                                weight: 6,
+                                opacity: 0.9,
+                                dashArray: '3, 6'
+                            }
+                        }).addTo(map);
+
+                        // Add start and end markers
+                        L.marker([hotelLatitude, hotelLongitude], {
+                            icon: L.divIcon({
+                                className: 'start-marker',
+                                html: '<div style="background-color: #4CAF50; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">S</div>',
+                                iconSize: [24, 24]
+                            })
+                        }).addTo(map);
+
+                        L.marker([closestDoor.coordinates.lat, closestDoor.coordinates.lon], {
+                            icon: L.divIcon({
+                                className: 'end-marker',
+                                html: '<div style="background-color: #f44336; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">E</div>',
+                                iconSize: [24, 24]
+                            })
+                        }).addTo(map);
+
+                        // Update route information with the correct distance
+                        document.getElementById('routeDistance').textContent = `${(route.distance / 1000).toFixed(2)} km`;
+                        document.getElementById('walkingTime').textContent = `${Math.ceil(route.duration / 60)} minutes`;
+
+                        // Add turn-by-turn instructions
+                        const instructionsDiv = document.getElementById('routeInstructions');
+                        instructionsDiv.innerHTML = '';
+                        if (route.legs && route.legs[0] && route.legs[0].steps) {
+                            route.legs[0].steps.forEach((step, index) => {
+                                const instruction = document.createElement('div');
+                                instruction.className = 'instruction';
+                                let instructionText = 'Continue walking';
+                                if (step.maneuver && step.maneuver.instruction) {
+                                    instructionText = step.maneuver.instruction
+                                        .replace('Turn', 'Walk')
+                                        .replace('Continue', 'Continue walking')
+                                        .replace('onto', 'along')
+                                        .replace('Take the', 'Follow the')
+                                        .replace('exit', 'path');
+                                }
+                                instruction.innerHTML = `
+                                    <strong>${index + 1}.</strong> ${instructionText}
+                                    <br>
+                                    <small>${(step.distance / 1000).toFixed(2)} km</small>
+                                `;
+                                instructionsDiv.appendChild(instruction);
+                            });
+                        }
+                    }
+                }
+
+                // Show the Start Navigation button
+                document.getElementById('startNavigationBtn').style.display = 'block';
+                document.getElementById('stopNavigationBtn').style.display = 'none';
+
+                // Fit map to show the entire route
+                const bounds = routeLayer.getBounds();
+                bounds.extend([hotelLatitude, hotelLongitude]);
+                map.fitBounds(bounds, {
+                    padding: [50, 50]
+                });
+
+                if (isFirstTime) {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    isFirstTime = false;
+
+                    // Start periodic refresh
+                    refreshInterval = setInterval(async () => {
+                        await findClosestOpenDoorToHotel();
+                    }, 30000); // Refresh every 30 seconds
+                }
+                return shortestPath || null;
+            } catch (error) {
+                console.error('Error finding closest door:', error);
+                alert('Failed to find closest door. Please try again.');
+                if (isFirstTime) {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }
+            }
+        }
+let userMarker;
+        // Add new navigation function for hotel-to-door
+       async function startNavigationFromHotel() {
+    try {
+        document.getElementById('mapAndPathSegments').style.display = 'block';
+        // Simulate getting the user's position (replace with real geolocation if needed)
+        const position = {
+            coords: {
+                latitude: 21.42013268687202,
+                longitude: 39.833648884538434
+            }
+        };
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+
+        // Update user marker
+        if (userMarker) {
+            map.removeLayer(userMarker);
+        }
+        userMarker = L.marker([userLat, userLng]).addTo(map);
+
+        // Get the closest path from hotel to door
+        const path = await findClosestOpenDoorToHotel();
+        if (!path || !Array.isArray(path.coordinates)) {
+            console.error("Path is invalid:", path);
+            throw new Error('No path data available');
+        }
+
+        currentPath = path;
+
+        // Draw path on the map
+        if (pathLayer) {
+            map.removeLayer(pathLayer);
+        }
+
+        pathLayer = L.polyline(currentPath.coordinates.map(p => [p.lat, p.lon]), {
+            color: '#4CAF50',
+            weight: 6,
+            opacity: 0.9
+        }).addTo(map);
+
+        // Add click event on the path to show popup with image/description
+        if (pathLayer) {
+          pathLayer.on('click', function(e) {
+  const clickedLatLng = e.latlng;
+  let closestIndex = -1;
+  let minDistance = Infinity;
+
+  currentPath.coordinates.forEach((point, index) => {
+    const distance = map.distance(clickedLatLng, L.latLng(point.lat, point.lon));
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestIndex = index;
+    }
+  });
+
+  if (closestIndex !== -1 && closestIndex < currentPath.coordinates.length - 1) {
+    updateActiveSegment(closestIndex);
+
+    const point = currentPath.coordinates[closestIndex];
+    const popupHtml = `
+      <strong>Segment ${closestIndex + 1}</strong><br>
+      ${point.description ? `<p>${point.description}</p>` : ''}
+      ${point.image ? `<img src="${point.image}" style="max-width:150px; border-radius: 8px;">` : ''}
+    `;
+    L.popup()
+      .setLatLng([point.lat, point.lon])
+      .setContent(popupHtml)
+      .openOn(map);
+  }
+});
+
+        }
+
+        // Display path segments visually in a side panel (if available)
+        const segmentsContainer = document.getElementById('pathSegments');
+        if (segmentsContainer) {
+            segmentsContainer.innerHTML = '';
+            
+            currentPath.coordinates.forEach((point, index) => {
+    const segment = document.createElement('div');
+    segment.className = 'path-segment';
+    segment.id = `segment-${index}`;
+
+    let segmentHtml = `<h6>Segment ${index + 1}</h6>`;
+    
+    if (point.image) {
+        segmentHtml += `<img src="${point.image}" alt="Path segment ${index + 1}" style="max-width:100%;border-radius:8px;margin-bottom:10px;">`;
+    }
+
+    if (point.description) {
+        segmentHtml += `<p class="description">${point.description}</p>`;
+    }
+
+    segment.innerHTML = segmentHtml;
+    segmentsContainer.appendChild(segment);
+});
+            // Highlight first segment
+           updateActiveSegment(0);
+        }
+
+        // Start tracking user's location (implement this if you haven't)
+        startLocationTracking();
+
+        // Update navigation status
+        const statusDiv = document.getElementById('navigationStatus');
+        if (statusDiv) {
+            statusDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <p><strong>Distance:</strong> ${currentPath.distance.toFixed(2)} km</p>
+                    <p><strong>Estimated Time:</strong> ${currentPath.estimatedTime} minutes</p>
+                </div>
+            `;
+        }
+
+        // Update the button UI
+        const startNavButton = document.getElementById('startNavigation');
+        if (startNavButton) {
+            startNavButton.textContent = 'Stop Navigation';
+        }
+
+        isNavigating = true;
+
+   map.on('click', function(e) {
+  const clickedElement = e.originalEvent.target;
+  if (clickedElement && clickedElement.tagName === 'DIV') {
+    const text = clickedElement.textContent.trim();
+    if (text === 'S') {
+      updateActiveSegment(0); // Show first segment image and description
+    }
+    if (text === 'E') {
+      updateActiveSegment(currentPath.coordinates.length - 1); // Show last segment image and description
+    }
+  }
+});
+
+
+
+    } catch (error) {
+        console.error('Error starting navigation:', error);
+        alert('Failed to start navigation: ' + error.message);
+    }
+}
+
+
+
+let currentSegmentIndex = 0;
+
+function updateActiveSegment(index) {
+  const segments = document.querySelectorAll('.path-segment');
+  if (index < 0 || index >= segments.length) return;
+
+  segments.forEach((segment, i) => {
+    segment.classList.toggle('active', i === index);
+    segment.style.display = i === index ? 'block' : 'none';
+  });
+
+  currentSegmentIndex = index;
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  const segments = document.querySelectorAll('.path-segment');
+  if (currentSegmentIndex < segments.length - 1) {
+    updateActiveSegment(currentSegmentIndex + 1);
+  }
+});
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (currentSegmentIndex > 0) {
+    updateActiveSegment(currentSegmentIndex - 1);
+  }
+});
+
+function startLocationTracking() {
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+    }
+
+    watchId = navigator.geolocation.watchPosition(position => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        if (userMarker) {
+            userMarker.setLatLng([lat, lon]);
+        } else {
+            userMarker = L.marker([lat, lon]).addTo(map);
+        }
+
+        // Optionally: Highlight path segment nearest to current location here
+
+    }, error => {
+        console.error("Geolocation error:", error);
+    }, {
+        enableHighAccuracy: true
+    });
+}
+
+        // Add styles for path segments
+        const style = document.createElement('style');
+        style.textContent = `
+            .path-segment {
+                padding: 15px;
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background: white;
+            }
+            .path-segment.active {
+                border-color: #4CAF50;
+                box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
+            }
+            .path-segment img {
+                width: 100%;
+                height: auto;
+                border-radius: 4px;
+                margin-bottom: 10px;
+            }
+            .path-segment .description {
+                margin: 10px 0;
+                color: #666;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Update the button click handlers
+        document.getElementById('startNavigationBtn').addEventListener('click', function() {
+            const isFromHotel = document.getElementById('locationToggle').checked;
+            if (isFromHotel) {
+                startNavigationFromHotel();
+            } else {
+                startNavigation();
+            }
+        });
+
+        // Update the location toggle handler
+        document.getElementById('locationToggle').addEventListener('change', function(e) {
+            const isFromHotel = e.target.checked;
+            const findClosestBtn = document.querySelector('.find-closest-btn');
+            
+            // Show/hide the Find Closest Open Door button
+            if (findClosestBtn) {
+                findClosestBtn.style.display = isFromHotel ? 'none' : 'block';
+            }
+
+            // Stop any ongoing navigation
+            if (isNavigating) {
+                stopNavigation();
+            }
+
+            if (isFromHotel) {
+                findClosestOpenDoorToHotel();
+            } else {
+                findClosestOpenDoor();
+            }
+        });
+
+        // Show the modal for a specific point
+        function showImageModal(pointIndex) {
+          currentPointIndex = pointIndex;
+          document.getElementById('segmentImage').value = '';
+          document.getElementById('imageDescription').value = '';
+          document.getElementById('imagePreview').style.display = 'none';
+          document.getElementById('previewImg').src = '';
+          document.getElementById('imageUploadModal').style.display = 'block';
+        }
+
+        // Close the modal
+        function closeImageModal() {
+          document.getElementById('imageUploadModal').style.display = 'none';
+        }
+
+        // Preview image
+        document.getElementById('segmentImage').onchange = function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              document.getElementById('previewImg').src = e.target.result;
+              document.getElementById('imagePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+
+        // Save image and description to the point
+        function saveSegmentImage() {
+          const file = document.getElementById('segmentImage').files[0];
+          const desc = document.getElementById('imageDescription').value;
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              pathPoints[currentPointIndex].image = e.target.result;
+              pathPoints[currentPointIndex].description = desc;
+              closeImageModal();
+            };
+            reader.readAsDataURL(file);
+          } else {
+            pathPoints[currentPointIndex].description = desc;
+            closeImageModal();
+          }
+        }
+
+        map.on('click', function(e) {
+          if (!pathLayer) {
+            pathPoints = [];
+            pathLayer = L.polyline([], { color: '#4CAF50', weight: 6, opacity: 0.9 }).addTo(map);
+          }
+          const point = {
+            lat: e.latlng.lat,
+            lon: e.latlng.lng,
+            image: null,
+            description: ''
+          };
+          pathPoints.push(point);
+          pathLayer.setLatLngs(pathPoints.map(p => [p.lat, p.lon]));
+          showImageModal(pathPoints.length - 1); // Show modal to upload image/description
+          if (pathPoints.length >= 2) document.getElementById('savePath').disabled = false;
+        });
+    </script>
+</body>
+</html>

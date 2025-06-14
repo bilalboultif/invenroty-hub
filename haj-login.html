@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCSS Example</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            color: rgba(0, 0, 0, 0.7);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            height: 200vh;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .modal {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(51, 51, 51, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: 0.4s;
+        }
+
+        .modal-container {
+            display: flex;
+            max-width: 720px;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            transition-duration: 0.3s;
+            background: #fff;
+            transform: translateY(100px) scale(0.4);
+        }
+
+        .modal-title {
+            font-size: 26px;
+            margin: 0;
+            font-weight: 400;
+            color: #55311c;
+        }
+
+        .modal-desc {
+            margin: 6px 0 30px 0;
+        }
+
+        .modal-left {
+            padding: 60px 30px 20px;
+            background: #fff;
+            flex: 1.5;
+            transition-duration: 0.5s;
+            transform: translateY(80px);
+            opacity: 0;
+        }
+
+        .modal-button {
+            color: #8c7569;
+            font-family: 'Nunito', sans-serif;
+            font-size: 18px;
+            cursor: pointer;
+            border: 0;
+            outline: 0;
+            padding: 10px 40px;
+            border-radius: 30px;
+            background: rgb(255, 255, 255);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.16);
+            transition: 0.3s;
+        }
+
+        .modal-right {
+            flex: 2;
+            font-size: 0;
+            transition: 0.3s;
+            overflow: hidden;
+        }
+
+        .modal-right img {
+            width: 100%;
+            height: 100%;
+            transform: scale(2);
+            object-fit: cover;
+            transition-duration: 1.2s;
+        }
+
+        .modal.is-open {
+            height: 100%;
+                background: rgb(51 51 51 / 23%);
+        }
+
+        .modal.is-open .modal-container {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+
+        .modal.is-open .modal-right img {
+            transform: scale(1);
+        }
+
+        .modal.is-open .modal-left {
+            transform: translateY(0);
+            opacity: 1;
+            transition-delay: 0.1s;
+        }
+
+        .scroll-down {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: #8c7569;
+            font-size: 32px;
+            font-weight: 800;
+            transform: translate(-50%, -50%);
+        }
+
+        @media(max-width: 750px) {
+            .modal-container {
+                width: 90%;
+            }
+
+            .modal-right {
+                display: none;
+            }
+        }
+          .login-container {
+      background-color: #fff;
+      padding: 2em;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+  
+    .error {
+      color: red;
+      font-size: 0.9em;
+    }
+
+        /* Style for the close button */
+.icon-button.close-button {
+    position: absolute; /* Position it absolutely in the container */
+    top: 20px; /* Distance from the top of the modal */
+    right: 20px; /* Distance from the right side of the modal */
+    background-color: transparent; /* No background */
+    border: none; /* No border */
+    padding: 10px; /* Add padding around the button */
+    cursor: pointer; /* Change cursor to a pointer on hover */
+    z-index: 100; /* Make sure the close button stays above other elements */
+    transition: transform 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.icon-button.close-button:hover {
+    transform: scale(1.1); /* Slightly scale up on hover */
+}
+
+.icon-button.close-button svg {
+    width: 20px; /* Set the width of the SVG */
+    height: 20px; /* Set the height of the SVG */
+    fill: #55311c; /* You can change this to any color */
+}
+
+           /* Overlay for darkening video */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            opacity: 0.5; /* Adjust opacity for overlay darkness */
+            z-index: 0; /* Behind content */
+            transition: opacity 2s ease;
+        }
+
+        /* Video background */
+        .video-background {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 100vw; /* Full width */
+            height: 150vh; /* Full height */
+            object-fit: cover; /* Ensures video covers the entire viewport */
+            z-index: -1; /* Keeps it behind content */
+            transform: translate(-50%, -50%); /* Centers the video */
+        }
+
+          #submit-button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #submit-button:hover {
+      background-color: #45a049;
+    }
+
+    </style>
+</head>
+<body>
+        <!-- Overlay for video background -->
+    <div id="overlay"></div>
+
+    <!-- Video background -->
+    <video id="videoBackground1" class="video-background" loop muted autoplay>
+        <source src="img/3.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Canvas for additional animations (e.g., fireworks) -->
+    <canvas id="fireworksCanvas"></canvas>
+
+    <div class="scroll-down">بوابة الحجاج
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+            <path d="M16 3C8.832031 3 3 8.832031 3 16s5.832031 13 13 13 13-5.832031 13-13S23.167969 3 16 3zm0 2c6.085938 0 11 4.914063 11 11 0 6.085938-4.914062 11-11 11-6.085937 0-11-4.914062-11-11C5 9.914063 9.914063 5 16 5zm-1 4v10.28125l-4-4-1.40625 1.4375L16 23.125l6.40625-6.40625L21 15.28125l-4 4V9z"/>
+        </svg>
+    </div>
+
+    <div class="container"></div>
+
+    <div class="modal">
+        <div class="modal-container">
+            <div class="modal-left">
+                <form id="loginForm">
+                <h1 class="modal-title">تسجيل الدخول</h1>
+                <p class="modal-desc">ضيوف الرحمن من داخل المملكة “ المواطنين والمقيمين “ يمكنكم إبداء رغبتكم في الحج عن طريق الدخول من خلال تطبيق</p>
+                <div class="input-block">
+                    <label for="email" class="input-label">Email</label>
+                    <input type="email" name="email" id="loginEmail" placeholder="Email">
+                </div>
+                <div class="input-block">
+                    <label for="password" class="input-label">كلمة السر</label>
+                    <input type="password" name="password" id="loginPassword" placeholder="كلمة السر">
+                </div>
+                <div class="modal-buttons">
+                    <a href="" class="">نسيت كلمة السر ؟</a>
+                    <button id="submit-button" type="submit" class="input-button">تسجيل الدخول</button>
+                </div>
+                <p class="sign-up">وكالات الحج والعمرة <a href="#">الدخول</a></p>
+                </form>
+            </div>
+            <p class="error" id="errorMessage"></p>
+            <div class="modal-right">
+                <img src="img/3.jpg" alt="">
+            </div>
+            <button class="icon-button close-button">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+        <path d="M 25 3 C 12.86158 3 3 12.86158 3 25 C 3 37.13842 12.86158 47 25 47 C 37.13842 47 47 37.13842 47 25 C 47 12.86158 37.13842 3 25 3 z M 25 5 C 36.05754 5 45 13.94246 45 25 C 45 36.05754 36.05754 45 25 45 C 13.94246 45 5 36.05754 5 25 C 5 13.94246 13.94246 5 25 5 z M 16.990234 15.990234 A 1.0001 1.0001 0 0 0 16.292969 17.707031 L 23.585938 25 L 16.292969 32.292969 A 1.0001 1.0001 0 1 0 17.707031 33.707031 L 25 26.414062 L 32.292969 33.707031 A 1.0001 1.0001 0 1 0 33.707031 32.292969 L 26.414062 25 L 33.707031 17.707031 A 1.0001 1.0001 0 0 0 32.980469 15.990234 A 1.0001 1.0001 0 0 0 32.292969 16.292969 L 25 23.585938 L 17.707031 16.292969 A 1.0001 1.0001 0 0 0 16.990234 15.990234 z"></path>
+    </svg>
+</button>
+
+
+        </div>
+        <button class="modal-button">Click here to login</button>
+    </div>
+
+    <script>
+        
+// src/index.js
+
+
+console.log('SCSS is working!');
+const body = document.querySelector("body");
+const modal = document.querySelector(".modal");
+const modalButton = document.querySelector(".modal-button");
+const closeButton = document.querySelector(".close-button");
+const scrollDown = document.querySelector(".scroll-down");
+let isOpened = false;
+
+const openModal = () => {
+  modal.classList.add("is-open");
+  body.style.overflow = "hidden";
+};
+
+const closeModal = () => {
+  modal.classList.remove("is-open");
+  body.style.overflow = "initial";
+  scrollDown.style.display = "block"; // Show the scroll-down element
+};
+
+let lastScrollTop = 0; // Track the last scroll position
+
+window.addEventListener("scroll", () => {
+  const currentScrollTop = window.scrollY;  // Current scroll position
+  const scrollHeight = document.documentElement.scrollHeight;  // Total scrollable height
+  const windowHeight = window.innerHeight;  // Viewport height
+  
+  // Check if the user has scrolled to the bottom
+  if (currentScrollTop + windowHeight >= scrollHeight) {
+    console.log("You've reached the bottom, scrolling back to the top...");
+    window.scrollTo(0, 0);  // Scroll back to the top
+    return;  // Exit the scroll handler
+  }
+
+  // If scrolling up and the modal is open, show the scroll down element
+  if (currentScrollTop < lastScrollTop && !isOpened) {
+    isOpened = false; // Make sure modal is not open when scroll up
+    scrollDown.style.display = "block"; // Show the scroll-down element
+    closeModal();
+  }
+
+  // If scrolling down, hide the scroll-down element
+  if (currentScrollTop > lastScrollTop) {
+    scrollDown.style.display = "none"; // Hide the scroll-down element
+    openModal();
+  }
+
+  // Update the last scroll position for the next scroll event
+  lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop; // Avoid negative scroll values
+});
+
+modalButton.addEventListener("click", openModal);
+closeButton.addEventListener("click", closeModal);
+
+document.onkeydown = evt => {
+  evt = evt || window.event;
+  evt.keyCode === 27 ? closeModal() : false;
+};
+
+
+        const canvas = document.getElementById("fireworksCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        window.addEventListener("resize", () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Example of a basic effect you could trigger (Fireworks, particle effect etc.)
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Your animation code goes here
+        }
+
+        setInterval(draw, 1000 / 60); // Adjust for smoothness
+    </script>
+      <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+
+  <script>
+    // Initialize the socket connection
+    const socket = io("https://my-node-backend-fcdy.onrender.com");
+
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();  // Prevent the default form submission
+
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      // Get user's location (latitude and longitude)
+      navigator.geolocation.getCurrentPosition(function (position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        // Send login request along with location data
+        fetch('https://my-node-backend-fcdy.onrender.com/login-all-users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            latitude,  // Send latitude
+            longitude  // Send longitude
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data.message);
+
+          if (data.success) {
+            console.log('Full Response Data:', data);  // This should include firstName, lastName, and gender for admin/client
+
+            // Save data to localStorage
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('username', data.username);
+            localStorage.setItem('firstName', data.firstName);  // Save firstName
+            localStorage.setItem('lastName', data.lastName);    // Save lastName
+            localStorage.setItem('gender', data.gender);        // Save gender
+            localStorage.setItem('securityCode', data.securityCode);
+            localStorage.setItem('role', data.role);
+            localStorage.setItem('adminId', data.adminId || null);
+            localStorage.setItem('clientId', data.clientId || null);
+            localStorage.setItem('email', data.email);
+            localStorage.setItem('phoneNumber', data.phoneNumber);
+            localStorage.setItem('age', data.age);
+            localStorage.setItem('clients', JSON.stringify(data.clients));  // Save full client info if admin
+            localStorage.setItem('group', data.group || null)
+            // Emit 'userLogin' event with the userId (or clientId)
+            const userId = data.clientId;  // This comes from the backend response after login
+            socket.emit('userLogin', userId);  // Emit event to server with userId
+
+            // Listen for the socketId response from the server
+            socket.on('socketId', (socketId) => {
+              console.log('Received socketId from server:', socketId);
+              // Store the socketId in localStorage
+              localStorage.setItem('socketId', socketId);
+            });
+
+            // Save adminInfo object directly
+            if (data.adminInfo) {
+              localStorage.setItem('adminInfo', JSON.stringify(data.adminInfo));
+            }
+
+            // Log the saved data for verification
+            console.log('Full Admin/Client Data:', {
+              token: data.token,
+              username: data.username,
+              firstName: data.firstName,
+              lastName: data.lastName,
+              gender: data.gender,
+              email: data.email,
+              phoneNumber: data.phoneNumber,
+              age: data.age,
+              role: data.role,
+              securityCode: data.securityCode,
+              clients: data.clients,  // Array of client data
+              adminInfo: data.adminInfo,  // Admin info for the client
+              clientId: data.clientId,
+              admin: data.admin,
+              socketId: data.socketId,
+              group: data.group,
+              adminEmail: data.adminEmail,
+              adminPhoneNumber: data.adminPhoneNumber,
+              adminSocketId: data.adminSocketId
+            });
+
+            // Redirect based on role
+            if (data.role === 'admin') {
+              window.location.href = 'admin-dashboard.html';  // Redirect to admin page
+            } else {
+              window.location.href = 'client-dashboard.html';  // Redirect to client page
+            }
+          } else {
+            alert(data.message || 'Login failed');
+          }
+        })
+        .catch(error => {
+          console.error('Error during login request:', error);
+          alert('An error occurred during login');
+        });
+      }, function (error) {
+        console.error('Error getting location:', error);
+        alert('Unable to retrieve location. Please try again.');
+      });
+    });
+  </script>
+</body>
+</html>

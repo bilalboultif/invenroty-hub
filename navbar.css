@@ -1,0 +1,152 @@
+/* Navbar Styling */
+nav {
+    background-color: #333;
+    padding: 10px 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1111;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    position: relative;
+}
+
+.menu-toggle {
+    display: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+}
+
+/* Refresh button styling */
+.refresh-icon {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px;
+    transition: transform 0.3s ease;
+}
+
+.refresh-icon:hover {
+    transform: rotate(180deg);
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+}
+
+nav ul li {
+    display: inline-block;
+    margin: 0 20px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    font-size: 18px;
+    display: inline-block;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, transform 0.3s ease, color 0.3s ease;
+}
+
+/* Navbar links hover effects */
+nav ul li a:hover {
+    background-color: #575757;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* Active link effect */
+nav ul li a.active {
+    background-color: #444;
+    color: #ffcc00;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 600px) {
+    .menu-toggle {
+        display: block;
+    }
+
+    .refresh-icon {
+        position: absolute;
+        left: 80px;
+    }
+
+    nav ul {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: #333;
+        flex-direction: column;
+        padding: 20px 0;
+        text-align: left;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    nav ul.active {
+        display: flex;
+    }
+
+    nav ul li {
+        display: block;
+        margin: 0;
+        width: 100%;
+    }
+
+    nav ul li a {
+        display: block;
+        padding: 15px 20px;
+        border-radius: 0;
+    }
+
+    nav ul li a:hover {
+        background-color: #444;
+    }
+}
+
+/* Animation for links */
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+nav ul li a {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Staggered Animation Delays */
+nav ul li a:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+nav ul li a:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+nav ul li a:nth-child(3) {
+    animation-delay: 0.3s;
+} 
