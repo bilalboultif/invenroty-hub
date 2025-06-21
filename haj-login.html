@@ -255,7 +255,7 @@
             <div class="modal-left">
                 <form id="loginForm">
                 <h1 class="modal-title">تسجيل الدخول</h1>
-                <p class="modal-desc">ضيوف الرحمن من داخل المملكة “ المواطنين والمقيمين “ يمكنكم إبداء رغبتكم في الحج عن طريق الدخول من خلال تطبيق</p>
+                <p class="modal-desc">ضيوف الرحمن من داخل المملكة " المواطنين والمقيمين " يمكنكم إبداء رغبتكم في الحج عن طريق الدخول من خلال تطبيق</p>
                 <div class="input-block">
                     <label for="email" class="input-label">Email</label>
                     <input type="email" name="email" id="loginEmail" placeholder="Email">
@@ -374,6 +374,11 @@ document.onkeydown = evt => {
     // Initialize the socket connection
     const socket = io("https://my-node-backend-fcdy.onrender.com");
 
+    // Wait for socket connection before emitting userLogin
+    socket.on('connect', () => {
+      console.log('Socket connected, ready to emit userLogin events');
+    });
+
     document.getElementById('loginForm').addEventListener('submit', function (e) {
       e.preventDefault();  // Prevent the default form submission
 
@@ -420,9 +425,39 @@ document.onkeydown = evt => {
             localStorage.setItem('age', data.age);
             localStorage.setItem('clients', JSON.stringify(data.clients));  // Save full client info if admin
             localStorage.setItem('group', data.group || null)
-            // Emit 'userLogin' event with the userId (or clientId)
-            const userId = data.clientId;  // This comes from the backend response after login
-            socket.emit('userLogin', userId);  // Emit event to server with userId
+            // Save adminInfo object directly
+            if (data.adminInfo) {
+              localStorage.setItem('adminInfo', JSON.stringify(data.adminInfo));
+            }
+
+            // Emit 'userLogin' event with proper format for both admin and client
+            let userId, userType;
+            if (data.role === 'admin') {
+              userId = data.adminId;
+              userType = 'Admin';
+            } else {
+              userId = data.clientId;
+              userType = 'Client';
+            }
+            
+            // Debug logging
+            console.log('Login response data:', data);
+            console.log('Determined userId and userType:', { userId, userType, role: data.role });
+            
+            // Only emit if we have a valid userId and socket is connected
+            if (userId && socket.connected) {
+              console.log('Emitting userLogin event:', { userId, userType });
+              socket.emit('userLogin', { userId, userType });
+            } else {
+              console.error('Cannot emit userLogin: userId =', userId, 'socket.connected =', socket.connected);
+              // If socket is not connected, wait for connection and then emit
+              if (!socket.connected) {
+                socket.once('connect', () => {
+                  console.log('Socket connected, now emitting userLogin event:', { userId, userType });
+                  socket.emit('userLogin', { userId, userType });
+                });
+              }
+            }
 
             // Listen for the socketId response from the server
             socket.on('socketId', (socketId) => {
@@ -430,11 +465,6 @@ document.onkeydown = evt => {
               // Store the socketId in localStorage
               localStorage.setItem('socketId', socketId);
             });
-
-            // Save adminInfo object directly
-            if (data.adminInfo) {
-              localStorage.setItem('adminInfo', JSON.stringify(data.adminInfo));
-            }
 
             // Log the saved data for verification
             console.log('Full Admin/Client Data:', {

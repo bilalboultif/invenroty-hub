@@ -13,7 +13,6 @@ nav {
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
-    position: relative;
 }
 
 .menu-toggle {
@@ -22,21 +21,6 @@ nav {
     font-size: 24px;
     cursor: pointer;
     padding: 10px;
-}
-
-/* Refresh button styling */
-.refresh-icon {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 10px;
-    transition: transform 0.3s ease;
-}
-
-.refresh-icon:hover {
-    transform: rotate(180deg);
 }
 
 nav ul {
@@ -81,11 +65,6 @@ nav ul li a.active {
 @media screen and (max-width: 600px) {
     .menu-toggle {
         display: block;
-    }
-
-    .refresh-icon {
-        position: absolute;
-        left: 80px;
     }
 
     nav ul {

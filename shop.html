@@ -1,0 +1,3676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="navbar.css">
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        /* Product Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            margin-right: 400px; /* Match chat modal width */
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .product-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .product-price {
+            color: #1a73e8;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .product-description {
+            color: #666;
+            margin: 10px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .product-status {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .product-status.available {
+            color: #4caf50;
+        }
+
+        .product-status.sold {
+            color: #f44336;
+        }
+
+        /* Chat Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 400px;
+            height: 600px;
+            background: white;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            background: #f9f9f9;
+            border-radius: 4px;
+            min-height: 200px;
+            max-height: 350px;
+        }
+
+        .message {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 5px;
+            max-width: 80%;
+        }
+
+        .message.sent {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.received {
+            background: #e9ecef;
+            margin-right: auto;
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-content small {
+            font-size: 0.7em;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .message-input, .modal-content > div[style*='display: flex'] {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .message-input input, .modal-content > div[style*='display: flex'] input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .message-input button, .modal-content > div[style*='display: flex'] button {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .message-input button:hover, .modal-content > div[style*='display: flex'] button:hover {
+            background: #0056b3;
+        }
+
+        /* Location sharing styles */
+        .location-button {
+            background: #28a745 !important;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .location-button:hover {
+            background: #218838 !important;
+        }
+
+        .location-button:disabled {
+            background: #6c757d !important;
+            cursor: not-allowed;
+        }
+
+        /* Image upload button styles */
+        .image-upload-button {
+            background: #17a2b8 !important;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .image-upload-button:hover {
+            background: #138496 !important;
+        }
+
+        .image-upload-button:disabled {
+            background: #6c757d !important;
+            cursor: not-allowed;
+        }
+
+        /* Hidden file input */
+        .image-upload-input {
+            display: none;
+        }
+
+        /* Image message styles */
+        .image-message {
+            background: #e3f2fd !important;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .image-message:hover {
+            transform: scale(1.02);
+        }
+
+        .image-message .image-title {
+            font-weight: bold;
+            color: #2196f3;
+            margin-bottom: 5px;
+        }
+
+        .image-message .chat-image {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .image-message .image-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Full size image modal */
+        .full-image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            cursor: pointer;
+        }
+
+        .full-image-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .full-image-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .full-image-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 10001;
+        }
+
+        .full-image-close:hover {
+            color: #ddd;
+        }
+
+        .location-message {
+            background: #e8f5e8 !important;
+            border: 1px solid #28a745;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        .location-message .location-title {
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+
+        .location-message .location-coords {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .location-message .location-address {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .location-message .open-maps-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .location-message .open-maps-btn:hover {
+            background: #0056b3;
+        }
+
+        .location-error {
+            background: #f8d7da !important;
+            border: 1px solid #dc3545;
+            color: #721c24;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        /* Add Product Button */
+        .add-product-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1a73e8;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+
+        /* Add Product Modal */
+        .add-product-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .add-product-form {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .form-actions .submit {
+            background: #1a73e8;
+            color: white;
+        }
+
+        .form-actions .cancel {
+            background: #f0f2f5;
+            color: #666;
+        }
+
+        /* Chat Button Styles */
+        .chat-button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .chat-button:hover {
+            background: #1557b0;
+        }
+
+        .chat-button i {
+            font-size: 16px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .modal {
+                width: 100%;
+            }
+            .products-grid {
+                margin-right: 0;
+            }
+        }
+
+        /* Product Details Modal */
+        .product-details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .product-details-content {
+            position: relative;
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 1000px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-details {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .product-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .product-images {
+            position: relative;
+        }
+
+        .image-slider {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .slider-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .slider-image.active {
+            display: block;
+        }
+
+        .slider-nav {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .slider-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+        }
+
+        .slider-dot.active {
+            background-color: white;
+        }
+
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 50%;
+            font-size: 20px;
+        }
+
+        .slider-prev {
+            left: 10px;
+        }
+
+        .slider-next {
+            right: 10px;
+        }
+
+        .product-details-info {
+            padding: 20px;
+        }
+
+        .product-details-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .product-details-price {
+            font-size: 28px;
+            color: #1a73e8;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .product-details-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .product-details-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .meta-item {
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-weight: bold;
+        }
+
+        .product-details-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .chat-button {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+        .chat-button:hover {
+            background-color: #1557b0;
+        }
+
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-preview {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            padding: 0;
+        }
+
+        .remove-preview:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .shop-filters {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0 0 0;
+        }
+        #searchInput, #categoryFilter {
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        .product-image-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .notification-dot {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            background-color: #ff6b00;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 4px rgba(0,0,0,0.2);
+        }
+
+        /* Notification Icon Styles */
+        .notification-icon {
+            position: relative;
+            margin-left: 15px;
+            cursor: pointer;
+        }
+
+        .notification-counter {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ff6b00;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            min-width: 18px;
+            text-align: center;
+            border: 2px solid white;
+            box-shadow: 0 0 4px rgba(0,0,0,0.2);
+        }
+
+        .notifications-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            min-width: 300px;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            margin-top: 10px;
+            z-index: 1000;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notifications-dropdown.show {
+            display: block;
+        }
+
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item.unread {
+            background-color: #f0f7ff;
+        }
+
+        .notification-item .message-preview {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .notification-item .message-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .notification-item .product-title {
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Position the dropdown relative to the icon */
+        .notification-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Notification Toast Styles */
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1a73e8;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            max-width: 300px;
+            word-wrap: break-word;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* User Profile Modal Styles */
+        .user-profile-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .user-profile-content {
+            position: relative;
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 1200px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-profile {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #1a73e8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .profile-info h2 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 20px;
+            color: #666;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a73e8;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .profile-products {
+            margin-top: 20px;
+        }
+
+        .profile-products h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .profile-products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .profile-product-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .profile-product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .profile-product-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .profile-product-info {
+            padding: 15px;
+        }
+
+        .profile-product-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .profile-product-price {
+            color: #1a73e8;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .profile-product-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .profile-product-status.available {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .profile-product-status.pending {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .profile-product-status.sold {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        /* Profile Button in Notifications */
+        .profile-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .profile-button:hover {
+            background: #218838;
+        }
+
+        /* Profile Button in Product Details */
+        .view-profile-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .view-profile-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <div class="nav-container">
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            <button id="refreshButton" class="refresh-icon">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            <ul>
+                <li><a href="#" id="homeLink">Home</a></li>
+                <li><a href="shop.html" class="active">Shop</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="shop-header">
+        <h1>Shop</h1>
+        <div class="shop-actions">
+            <button id="addProductBtn" class="action-button">
+                <i class="fas fa-plus"></i> Add Product
+            </button>
+            <div class="notification-wrapper">
+                <div class="notification-icon" id="notificationIcon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-counter" id="notificationCounter">0</span>
+                </div>
+                <div class="notifications-dropdown" id="notificationsDropdown">
+                    <!-- Notifications will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="shop-filters">
+        <input type="text" id="searchInput" placeholder="Search by product name..." />
+        <select id="categoryFilter">
+            <option value="">All Categories</option>
+            <option value="electronics">Electronics</option>
+            <option value="clothing">Clothing</option>
+            <option value="books">Books</option>
+            <option value="home">Home & Garden</option>
+            <option value="sports">Sports</option>
+            <option value="other">Other</option>
+        </select>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="products-grid" id="productsGrid">
+        <!-- Products will be dynamically added here -->
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal" id="addProductModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add New Product</h2>
+            <form id="addProductForm">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price ($)</label>
+                    <input type="number" id="price" name="price" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select a category</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="books">Books</option>
+                        <option value="home">Home & Garden</option>
+                        <option value="sports">Sports</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="condition">Condition</label>
+                    <select id="condition" name="condition" required>
+                        <option value="">Select condition</option>
+                        <option value="new">New</option>
+                        <option value="like-new">Like New</option>
+                        <option value="good">Good</option>
+                        <option value="fair">Fair</option>
+                        <option value="poor">Poor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="images">Images (Multiple)</label>
+                    <input type="file" id="images" name="images" accept="image/*" multiple required>
+                    <div id="imagePreview" class="image-preview"></div>
+                </div>
+                <button type="submit" class="action-button">Add Product</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div class="modal" id="chatModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="messages" id="messages"></div>
+            <!-- Product Status Control (Seller Only) -->
+            <div id="statusControl" style="display:none; margin: 10px 0;">
+                <label for="productStatusSelect"><b>Change Product Status:</b></label>
+                <select id="productStatusSelect">
+                    <option value="available">Available</option>
+                    <option value="pending">Pending</option>
+                    <option value="sold">Sold</option>
+                </select>
+                <button id="updateStatusBtn">Update</button>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <input type="text" id="messageInput" placeholder="Type your message..." style="flex:1;" />
+                <button class="location-button" id="locationButton" title="Share your location">
+                    <i class="fas fa-map-marker-alt"></i>
+                </button>
+                <button class="image-upload-button" id="imageUploadButton" title="Upload an image">
+                    <i class="fas fa-image"></i>
+                </button>
+                <input type="file" id="imageUploadInput" class="image-upload-input" accept="image/*" />
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Details Modal -->
+    <div class="product-details-modal" id="productDetailsModal">
+        <div class="product-details-content">
+            <span class="close-details">&times;</span>
+            <div class="product-details-grid">
+                <div class="product-images">
+                    <div class="image-slider" id="imageSlider">
+                        <!-- Images will be added dynamically -->
+                    </div>
+                    <div class="slider-nav" id="sliderNav">
+                        <!-- Dots will be added dynamically -->
+                    </div>
+                    <div class="slider-arrow slider-prev" id="prevButton">&lt;</div>
+                    <div class="slider-arrow slider-next" id="nextButton">&gt;</div>
+                </div>
+                <div class="product-details-info">
+                    <h2 class="product-details-title" id="detailsTitle"></h2>
+                    <div class="product-details-price" id="detailsPrice"></div>
+                    <p class="product-details-description" id="detailsDescription"></p>
+                    <div class="product-details-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">Category</div>
+                            <div class="meta-value" id="detailsCategory"></div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Condition</div>
+                            <div class="meta-value" id="detailsCondition"></div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Status</div>
+                            <div class="meta-value" id="detailsStatus"></div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Seller</div>
+                            <div class="meta-value" id="detailsSeller"></div>
+                        </div>
+                    </div>
+                    <div class="product-details-actions">
+                        <button class="action-button chat-button" id="detailsChatButton">
+                            <i class="fas fa-comments"></i> View All Chats
+                        </button>
+                        <button class="view-profile-btn" id="viewProfileButton" style="display: none;">
+                            <i class="fas fa-user"></i> View Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile Modal -->
+    <div class="user-profile-modal" id="userProfileModal">
+        <div class="user-profile-content">
+            <span class="close-profile">&times;</span>
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">
+                    <!-- Avatar will be added dynamically -->
+                </div>
+                <div class="profile-info">
+                    <h2 id="profileName">User Profile</h2>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalProducts">0</div>
+                            <div class="stat-label">Total Products</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="availableProducts">0</div>
+                            <div class="stat-label">Available</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="soldProducts">0</div>
+                            <div class="stat-label">Sold</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-products">
+                <h3>All Products</h3>
+                <div class="profile-products-grid" id="profileProductsGrid">
+                    <!-- Products will be added dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Size Image Modal -->
+    <div class="full-image-modal" id="fullImageModal">
+        <span class="full-image-close" id="fullImageClose">&times;</span>
+        <div class="full-image-content" id="fullImageContent">
+            <!-- Full size image will be added dynamically -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <script src="navbar.js"></script>
+    <script>
+        let socket;
+        const processedMessageIds = new Set();
+        let allProducts = [];
+        // Initialize unread messages tracking
+        let unreadMessages = new Map();
+        let totalUnreadCount = 0;
+
+        function clearProcessedMessages() {
+            processedMessageIds.clear();
+        }
+
+        // Function to show product details and start chat
+        function showProductDetails(product) {
+            const modal = document.getElementById('productDetailsModal');
+            const slider = document.getElementById('imageSlider');
+            const nav = document.getElementById('sliderNav');
+            
+            // Hide notification dot when viewing product details
+            const notificationDot = document.getElementById(`notification-${product._id}`);
+            if (notificationDot) {
+                notificationDot.style.display = 'none';
+            }
+            
+            // Store current product ID
+            localStorage.setItem('currentProductId', product._id);
+            
+            // Clear previous content
+            slider.innerHTML = '';
+            nav.innerHTML = '';
+            
+            // Add images to slider
+            product.images.forEach((image, index) => {
+                const img = document.createElement('img');
+                img.src = image.image_data;
+                img.alt = `${product.title} - Image ${index + 1}`;
+                img.className = `slider-image ${index === 0 ? 'active' : ''}`;
+                slider.appendChild(img);
+                
+                // Add navigation dot
+                const dot = document.createElement('div');
+                dot.className = `slider-dot ${index === 0 ? 'active' : ''}`;
+                dot.addEventListener('click', () => showImage(index));
+                nav.appendChild(dot);
+            });
+            
+            // Update product details
+            document.getElementById('detailsTitle').textContent = product.title;
+            document.getElementById('detailsPrice').textContent = `$${product.price}`;
+            document.getElementById('detailsDescription').textContent = product.description;
+            document.getElementById('detailsCategory').textContent = product.category;
+            document.getElementById('detailsCondition').textContent = product.condition;
+            document.getElementById('detailsStatus').textContent = product.status;
+            document.getElementById('detailsSeller').textContent = product.seller.username;
+            
+            // Check if current user is the seller
+            const adminId = localStorage.getItem('adminId');
+            const clientId = localStorage.getItem('clientId');
+            const currentUserId = (adminId && adminId !== 'null' && adminId !== null) ? adminId : 
+                                (clientId && clientId !== 'null' && clientId !== null) ? clientId : null;
+            
+            const isSeller = currentUserId === product.seller._id || currentUserId === product.seller;
+            
+            // Update chat button based on user role
+            const chatButton = document.getElementById('detailsChatButton');
+            if (isSeller) {
+                chatButton.innerHTML = '<i class="fas fa-comments"></i> View All Chats';
+                chatButton.onclick = () => {
+                    // Hide product details modal
+                    modal.style.display = 'none';
+                    // Show chat list for seller
+                    showChatList(product._id);
+                };
+            } else {
+                chatButton.innerHTML = '<i class="fas fa-comments"></i> Chat with Seller';
+                chatButton.onclick = () => {
+                    // Hide product details modal
+                    modal.style.display = 'none';
+                    // Start chat for buyer
+                    startChat(product._id);
+                };
+            }
+            
+            // Show the modal
+            modal.style.display = 'block';
+            
+            // Show profile button
+            showProfileButtonInDetails(product);
+            
+            // Add close button functionality
+            const closeButton = modal.querySelector('.close-details');
+            closeButton.onclick = () => {
+                modal.style.display = 'none';
+            };
+            
+            // Close modal when clicking outside
+            window.onclick = (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            };
+            
+            // Add slider navigation
+            let currentImage = 0;
+            
+            function showImage(index) {
+                const images = slider.getElementsByClassName('slider-image');
+                const dots = nav.getElementsByClassName('slider-dot');
+                
+                // Hide all images and remove active class from dots
+                Array.from(images).forEach(img => img.classList.remove('active'));
+                Array.from(dots).forEach(dot => dot.classList.remove('active'));
+                
+                // Show selected image and activate corresponding dot
+                images[index].classList.add('active');
+                dots[index].classList.add('active');
+                
+                currentImage = index;
+            }
+            
+            // Add previous/next button functionality
+            document.getElementById('prevButton').onclick = () => {
+                currentImage = (currentImage - 1 + product.images.length) % product.images.length;
+                showImage(currentImage);
+            };
+            
+            document.getElementById('nextButton').onclick = () => {
+                currentImage = (currentImage + 1) % product.images.length;
+                showImage(currentImage);
+            };
+        }
+
+        // Function to show chat list for sellers
+        async function showChatList(productId) {
+            try {
+                const response = await fetch(`https://my-node-backend-fcdy.onrender.com/api/products/${productId}/chats`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch chats');
+                }
+
+                const chats = await response.json();
+                console.log('Fetched chats for seller:', chats);
+
+                // Get current user ID to filter out chats where seller is also the buyer
+                const adminId = localStorage.getItem('adminId');
+                const clientId = localStorage.getItem('clientId');
+                const currentUserId = (adminId && adminId !== 'null' && adminId !== null) ? adminId : 
+                                    (clientId && clientId !== 'null' && clientId !== null) ? clientId : null;
+
+                // Filter out chats where the buyer is the same as the current user (seller)
+                const filteredChats = chats.filter(chat => {
+                    const buyerId = chat.buyer._id || chat.buyer;
+                    return buyerId !== currentUserId;
+                });
+
+                console.log('Filtered chats (excluding seller as buyer):', filteredChats);
+
+                // Create chat list modal
+                const chatListModal = document.createElement('div');
+                chatListModal.className = 'modal';
+                chatListModal.style.display = 'block';
+                chatListModal.innerHTML = `
+                    <div class="modal-content" style="max-width: 600px;">
+                        <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                        <h2>Chats with Buyers</h2>
+                        <div id="chatList">
+                            ${filteredChats.length === 0 ? '<p>No chats yet</p>' : ''}
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(chatListModal);
+
+                // Populate chat list
+                const chatList = document.getElementById('chatList');
+                filteredChats.forEach(chat => {
+                    const chatItem = document.createElement('div');
+                    chatItem.className = 'chat-item';
+                    chatItem.style.cssText = `
+                        padding: 15px;
+                        border: 1px solid #ddd;
+                        margin: 10px 0;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        background: white;
+                    `;
+                    
+                    const unreadCount = chat.unreadCount ? chat.unreadCount.seller : 0;
+                    const unreadBadge = unreadCount > 0 ? `<span style="background: red; color: white; padding: 2px 6px; border-radius: 10px; font-size: 12px; margin-left: 10px;">${unreadCount}</span>` : '';
+                    
+                    chatItem.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${chat.buyer.username || 'Unknown Buyer'}</strong>
+                                <br>
+                                <small>${chat.messages.length} messages</small>
+                            </div>
+                            <div>
+                                ${unreadBadge}
+                                <button onclick="openChat('${chat._id}', '${productId}')" style="background: #1a73e8; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                                    Open Chat
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    chatList.appendChild(chatItem);
+                });
+
+                // Close modal when clicking outside
+                chatListModal.onclick = (event) => {
+                    if (event.target === chatListModal) {
+                        chatListModal.remove();
+                    }
+                };
+
+            } catch (error) {
+                console.error('Error fetching chats:', error);
+                alert('Failed to fetch chats');
+            }
+        }
+
+        // Function to open a specific chat
+        async function openChat(chatId, productId) {
+            try {
+                console.log('Opening chat:', { chatId, productId });
+                
+                // Remove all modals that might be open
+                const allModals = document.querySelectorAll('.modal');
+                allModals.forEach(modal => {
+                    if (modal.id !== 'chatModal') {
+                        console.log('Removing modal:', modal.id || 'unnamed');
+                        modal.remove();
+                    }
+                });
+
+                // Fetch product details
+                const productRes = await fetch(`https://my-node-backend-fcdy.onrender.com/api/products/${productId}`);
+                if (!productRes.ok) {
+                    throw new Error('Failed to fetch product details');
+                }
+                const product = await productRes.json();
+                
+                // Show/hide status control in chat modal based on user role
+                showStatusControlIfSeller(product, { _id: chatId });
+
+                // Clear messages and processed IDs for new chat
+                const chatMessages = document.getElementById('messages');
+                if (chatMessages) {
+                    chatMessages.innerHTML = '';
+                }
+                clearProcessedMessages();
+
+                // Store the current chat ID and product ID
+                localStorage.setItem('currentChatId', chatId);
+                localStorage.setItem('currentProductId', productId);
+
+                // Show the chat modal
+                const chatModal = document.getElementById('chatModal');
+                if (chatModal) {
+                    console.log('Showing chat modal');
+                    chatModal.style.display = 'block';
+                    
+                    // Ensure the modal is visible and on top
+                    chatModal.style.zIndex = '10000';
+                    chatModal.style.opacity = '1';
+                    chatModal.style.visibility = 'visible';
+                } else {
+                    console.error('Chat modal not found');
+                    throw new Error('Chat modal not found');
+                }
+
+                // Join the chat room
+                const adminId = localStorage.getItem('adminId');
+                const clientId = localStorage.getItem('clientId');
+                const userId = adminId && adminId !== 'null' ? adminId : clientId;
+                const userType = adminId && adminId !== 'null' ? 'Admin' : 'Client';
+
+                console.log('Joining chat room:', { chatId, productId, userId, userType });
+
+                // Leave any existing chat rooms
+                if (socket) {
+                    socket.emit('leaveProductChat', {
+                        chatId: localStorage.getItem('currentChatId')
+                    });
+                }
+
+                // Join the new chat room
+                socket.emit('joinProductChat', {
+                    chatId: chatId,
+                    productId: productId,
+                    userId: userId,
+                    userType: userType
+                });
+
+                // Mark messages as read and load messages
+                await markMessagesAsRead(chatId, productId);
+                await loadChatMessages(chatId);
+
+                // Immediately clear notifications for this chat
+                clearNotificationsForChat(chatId, productId);
+
+            } catch (error) {
+                console.error('Error opening chat:', error);
+                alert(error.message || 'Failed to open chat');
+            }
+        }
+
+        // Function to clear notifications for a specific chat
+        function clearNotificationsForChat(chatId, productId) {
+            // Hide notification dot for this product
+            const notificationDot = document.getElementById(`notification-${productId}`);
+            if (notificationDot) {
+                notificationDot.style.display = 'none';
+            }
+
+            // Remove notifications from dropdown for this specific chat
+            const dropdown = document.getElementById('notificationsDropdown');
+            const notifications = dropdown.querySelectorAll(`[data-chat-id="${chatId}"]`);
+            notifications.forEach(notification => {
+                notification.remove();
+            });
+
+            // Update unread count for this specific chat
+            const chatKey = `${productId}-${chatId}`;
+            if (unreadMessages.has(chatKey)) {
+                const count = unreadMessages.get(chatKey).length;
+                totalUnreadCount = Math.max(0, totalUnreadCount - count);
+                unreadMessages.delete(chatKey);
+                updateNotificationCounter();
+            }
+
+            // Also remove any general product notifications (for backward compatibility)
+            const productNotifications = dropdown.querySelectorAll(`[data-product-id="${productId}"]:not([data-chat-id])`);
+            productNotifications.forEach(notification => {
+                notification.remove();
+            });
+
+            if (unreadMessages.has(productId)) {
+                const count = unreadMessages.get(productId).length;
+                totalUnreadCount = Math.max(0, totalUnreadCount - count);
+                unreadMessages.delete(productId);
+                updateNotificationCounter();
+            }
+        }
+
+        // Function to load chat messages
+        async function loadChatMessages(chatId) {
+            if (!chatId) {
+                console.error('No chat ID provided');
+                return;
+            }
+
+            try {
+                console.log('Loading messages for chat:', chatId);
+                const response = await fetch(`https://my-node-backend-fcdy.onrender.com/api/products/chat/${chatId}/messages`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('Messages response:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to load messages');
+                }
+
+                const chatMessages = document.getElementById('messages');
+                if (chatMessages) {
+                    // Clear all messages when loading a new chat
+                    chatMessages.innerHTML = '';
+                    clearProcessedMessages();
+                    
+                    if (Array.isArray(data)) {
+                        for (const message of data) {
+                            if (!processedMessageIds.has(message._id)) {
+                                processedMessageIds.add(message._id);
+                                await appendMessage(message);
+                            }
+                        }
+                    } else if (data.messages && Array.isArray(data.messages)) {
+                        for (const message of data.messages) {
+                            if (!processedMessageIds.has(message._id)) {
+                                processedMessageIds.add(message._id);
+                                await appendMessage(message);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                alert(error.message || 'Failed to load messages');
+            }
+        }
+
+        // Function to append message to chat
+        async function appendMessage(message) {
+            const chatMessages = document.getElementById('messages');
+            if (chatMessages) {
+                const messageElement = document.createElement('div');
+                const adminId = localStorage.getItem('adminId');
+                const clientId = localStorage.getItem('clientId');
+                
+                // Determine current user's ID
+                let userId;
+                if (adminId && adminId !== 'null' && adminId !== null) {
+                    userId = adminId;
+                } else if (clientId && clientId !== 'null' && clientId !== null) {
+                    userId = clientId;
+                }
+
+                // Ensure proper string comparison for user IDs
+                const messageSenderId = String(message.sender);
+                const currentUserId = String(userId);
+                const isSent = messageSenderId === currentUserId;
+                
+                console.log('Message sender comparison:', {
+                    messageSenderId,
+                    currentUserId,
+                    isSent,
+                    messageSender: message.sender,
+                    userId: userId
+                });
+                
+                messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
+                
+                // Get username for the message sender
+                let senderName = 'You';
+                if (!isSent) {
+                    // Fetch username from backend for other users
+                    senderName = await getUsernameById(message.sender, message.senderModel);
+                }
+                
+                // Check if this is a location message
+                if (message.messageType === 'location' || (message.content && message.content.startsWith('{"type":"location"'))) {
+                    try {
+                        let locationData;
+                        if (typeof message.content === 'string') {
+                            locationData = JSON.parse(message.content);
+                        } else {
+                            locationData = message.content;
+                        }
+                        
+                        if (locationData.type === 'location') {
+                            const locationDiv = document.createElement('div');
+                            locationDiv.className = 'location-message';
+                            
+                            locationDiv.innerHTML = `
+                                <div class="location-title">
+                                    <i class="fas fa-map-marker-alt"></i> Location Shared by ${senderName}
+                                </div>
+                                <div class="location-coords">
+                                    ${locationData.latitude.toFixed(6)}, ${locationData.longitude.toFixed(6)}
+                                </div>
+                                <div class="location-address">
+                                    ${locationData.address}
+                                </div>
+                                <a href="https://www.google.com/maps?q=${locationData.latitude},${locationData.longitude}" 
+                                   target="_blank" class="open-maps-btn">
+                                    <i class="fas fa-external-link-alt"></i> Open in Maps
+                                </a>
+                            `;
+                            
+                            messageElement.appendChild(locationDiv);
+                        } else {
+                            // Fallback to regular message
+                            const content = document.createElement('div');
+                            content.className = 'message-content';
+                            
+                            const messageText = document.createElement('p');
+                            messageText.textContent = message.content;
+                            content.appendChild(messageText);
+
+                            const timestamp = document.createElement('small');
+                            timestamp.textContent = new Date(message.timestamp).toLocaleString();
+                            content.appendChild(timestamp);
+
+                            messageElement.appendChild(content);
+                        }
+                    } catch (error) {
+                        console.error('Error parsing location message:', error);
+                        // Fallback to regular message
+                        const content = document.createElement('div');
+                        content.className = 'message-content';
+                        
+                        const messageText = document.createElement('p');
+                        messageText.textContent = message.content;
+                        content.appendChild(messageText);
+
+                        const timestamp = document.createElement('small');
+                        timestamp.textContent = new Date(message.timestamp).toLocaleString();
+                        content.appendChild(timestamp);
+
+                        messageElement.appendChild(content);
+                    }
+                } else if (message.messageType === 'image' || (message.content && message.content.startsWith('{"type":"image"'))) {
+                    // Handle image messages
+                    try {
+                        let imageData;
+                        if (typeof message.content === 'string') {
+                            imageData = JSON.parse(message.content);
+                        } else {
+                            imageData = message.content;
+                        }
+                        
+                        if (imageData.type === 'image') {
+                            showImageMessage(imageData, isSent, senderName);
+                        } else {
+                            // Fallback to regular message
+                            const content = document.createElement('div');
+                            content.className = 'message-content';
+                            
+                            const messageText = document.createElement('p');
+                            messageText.textContent = message.content;
+                            content.appendChild(messageText);
+
+                            const timestamp = document.createElement('small');
+                            timestamp.textContent = new Date(message.timestamp).toLocaleString();
+                            content.appendChild(timestamp);
+
+                            messageElement.appendChild(content);
+                        }
+                    } catch (error) {
+                        console.error('Error parsing image message:', error);
+                        // Fallback to regular message
+                        const content = document.createElement('div');
+                        content.className = 'message-content';
+                        
+                        const messageText = document.createElement('p');
+                        messageText.textContent = message.content;
+                        content.appendChild(messageText);
+
+                        const timestamp = document.createElement('small');
+                        timestamp.textContent = new Date(message.timestamp).toLocaleString();
+                        content.appendChild(timestamp);
+
+                        messageElement.appendChild(content);
+                    }
+                } else {
+                    // Regular text message
+                    const content = document.createElement('div');
+                    content.className = 'message-content';
+                    
+                    // Add sender name for received messages
+                    // Add sender name for received messages
+// Always add sender name
+const senderNameElement = document.createElement('div');
+senderNameElement.className = 'message-sender';
+senderNameElement.style.cssText = 'font-weight: bold; font-size: 12px; color: #666; margin-bottom: 4px;';
+senderNameElement.textContent = senderName || "You";
+content.appendChild(senderNameElement);
+
+                    
+                    const messageText = document.createElement('p');
+                    messageText.textContent = message.content;
+                    content.appendChild(messageText);
+
+                    const timestamp = document.createElement('small');
+                    timestamp.textContent = new Date(message.timestamp).toLocaleString();
+                    content.appendChild(timestamp);
+
+                    messageElement.appendChild(content);
+                }
+                
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        // Function to get username by user ID
+        async function getUsernameById(userId, userType) {
+            try {
+                // Try to get from localStorage first for current user
+                const adminId = localStorage.getItem('adminId');
+                const clientId = localStorage.getItem('clientId');
+                
+                // Use string comparison for user IDs
+                if (String(userId) === String(adminId) || String(userId) === String(clientId)) {
+                    return localStorage.getItem('username') || 'You';
+                }
+                
+                // Try to get from admin clients array if current user is admin
+                if (adminId && adminId !== 'null') {
+                    const adminClients = JSON.parse(localStorage.getItem('clients') || '[]');
+                    const client = adminClients.find(c => String(c.clientId) === String(userId));
+                    if (client) {
+                        return client.username || 'Unknown User';
+                    }
+                }
+                
+                // Fetch from backend
+                let response;
+                if (userType === 'Admin' || userType === 'admin') {
+                    response = await fetch(`https://my-node-backend-fcdy.onrender.com/admins-profile/${userId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                } else {
+                    response = await fetch(`https://my-node-backend-fcdy.onrender.com/clients-profile/${userId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                }
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const user = data.admin || data.client;
+                    return user ? (user.username || 'Unknown User') : 'Unknown User';
+                }
+                
+                return 'Unknown User';
+            } catch (error) {
+                console.error('Error fetching username:', error);
+                return 'Unknown User';
+            }
+        }
+
+        // Helper to get current user ID and type
+        function getCurrentUser() {
+            const adminId = localStorage.getItem('adminId');
+            const clientId = localStorage.getItem('clientId');
+            let userType, userId;
+            if (adminId && adminId !== 'null' && adminId !== null) {
+                userType = 'Admin';
+                userId = adminId;
+            } else if (clientId && clientId !== 'null' && clientId !== null) {
+                userType = 'Client';
+                userId = clientId;
+            }
+            return { userType, userId };
+        }
+
+        // Show/hide status control in chat modal based on user role and set up status change logic
+        async function showStatusControlIfSeller(product, chat) {
+            const { userId } = getCurrentUser();
+            const statusControl = document.getElementById('statusControl');
+            const statusSelect = document.getElementById('productStatusSelect');
+            const updateBtn = document.getElementById('updateStatusBtn');
+            if (!statusControl || !statusSelect || !updateBtn) return;
+
+            // Debug: show what product.seller is
+            console.log('showStatusControlIfSeller:', {
+                userId,
+                productSeller: product.seller,
+                productSellerId: product.seller && product.seller._id ? product.seller._id : product.seller
+            });
+
+            // Only show if current user is the seller
+            const sellerId = product.seller && product.seller._id ? String(product.seller._id) : String(product.seller);
+            if (userId === sellerId) {
+                statusControl.style.display = 'block';
+                statusSelect.value = product.status;
+                // Debug: show a message in the modal for troubleshooting
+                if (!document.getElementById('sellerDebugMsg')) {
+                    const debugMsg = document.createElement('div');
+                    debugMsg.id = 'sellerDebugMsg';
+                    debugMsg.style.color = 'green';
+                    debugMsg.textContent = 'You are the seller. Status dropdown is visible.';
+                    statusControl.parentNode.insertBefore(debugMsg, statusControl);
+                }
+                updateBtn.onclick = async function() {
+                    const newStatus = statusSelect.value;
+                    // PATCH request to backend
+                    const token = localStorage.getItem('token');
+                    const res = await fetch(`https://my-node-backend-fcdy.onrender.com/api/products/${product._id}/status`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        // Emit socket event to broadcast status change
+                        if (socket) {
+                            socket.emit('productStatusUpdate', { productId: product._id, status: newStatus });
+                        }
+                        // Update UI immediately
+                        document.getElementById('detailsStatus').textContent = newStatus;
+                        statusSelect.value = newStatus;
+                        // Update product card in grid
+                        updateProductCardStatus(product._id, newStatus);
+                    } else {
+                        alert(data.message || 'Failed to update status');
+                    }
+                };
+            } else {
+                statusControl.style.display = 'none';
+                // Remove debug message if present
+                const debugMsg = document.getElementById('sellerDebugMsg');
+                if (debugMsg) debugMsg.remove();
+            }
+        }
+
+        // Update product card status badge in grid
+        function updateProductCardStatus(productId, newStatus) {
+            // If status changed to sold, remove the product from display
+            if (newStatus === 'sold') {
+                // Remove from allProducts array
+                allProducts = allProducts.filter(p => p._id !== productId);
+                
+                // Remove the product card from DOM
+                const cards = document.querySelectorAll('.product-card');
+                cards.forEach(card => {
+                    if (card && card.__productId === productId) {
+                        card.remove();
+                    }
+                });
+                
+                // Re-render products to ensure proper layout
+                renderProducts(allProducts);
+                return;
+            }
+            
+            // For other status changes, update the card normally
+            const cards = document.querySelectorAll('.product-card');
+            cards.forEach(card => {
+                if (card && card.__productId === productId) {
+                    const statusSpan = card.querySelector('.product-status');
+                    if (statusSpan) {
+                        statusSpan.textContent = newStatus;
+                        statusSpan.className = `product-status ${newStatus}`;
+                    }
+                }
+            });
+            // Also update in allProducts array
+            allProducts = allProducts.map(p => p._id === productId ? { ...p, status: newStatus } : p);
+        }
+
+        // Listen for product status changes from server
+        if (typeof socket !== 'undefined') {
+            socket.on('productStatusChanged', (data) => {
+                // Update status in chat modal
+                if (document.getElementById('detailsStatus')) {
+                    document.getElementById('detailsStatus').textContent = data.status;
+                }
+                // Update status in chat modal status control
+                if (document.getElementById('productStatusSelect')) {
+                    document.getElementById('productStatusSelect').value = data.status;
+                }
+                // Update product card in grid (this will remove sold products)
+                updateProductCardStatus(data.productId, data.status);
+            });
+        }
+
+        // Function to mark messages as read
+        async function markMessagesAsRead(chatId, productId) {
+            try {
+                const response = await fetch('https://my-node-backend-fcdy.onrender.com/api/products/mark-messages-read', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ chatId })
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.message || 'Failed to mark messages as read');
+                }
+
+                // Note: UI updates are now handled by clearNotificationsForChat function
+                // to ensure immediate visual feedback
+                console.log('Messages marked as read on server for chat:', chatId);
+
+            } catch (error) {
+                console.error('Error marking messages as read:', error);
+            }
+        }
+
+        // Modify the startChat function to handle notifications
+        async function startChat(productId) {
+            try {
+                console.log('Starting chat for product:', productId);
+                const response = await fetch(`https://my-node-backend-fcdy.onrender.com/api/products/${productId}/chat/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to start chat');
+                }
+
+                const chat = await response.json();
+                
+                // Fetch product details
+                const productRes = await fetch(`https://my-node-backend-fcdy.onrender.com/api/products/${productId}`);
+                if (!productRes.ok) {
+                    throw new Error('Failed to fetch product details');
+                }
+                const product = await productRes.json();
+                
+                // Show/hide status control in chat modal based on user role
+                showStatusControlIfSeller(product, chat);
+
+                if (!chat._id) {
+                    throw new Error('No chat ID received from server');
+                }
+
+                // Clear messages and processed IDs for new chat
+                const chatMessages = document.getElementById('messages');
+                if (chatMessages) {
+                    chatMessages.innerHTML = '';
+                }
+                clearProcessedMessages();
+
+                // Store the current chat ID and product ID
+                localStorage.setItem('currentChatId', chat._id);
+                localStorage.setItem('currentProductId', productId);
+
+                // Show the chat modal
+                const chatModal = document.getElementById('chatModal');
+                if (chatModal) {
+                    chatModal.style.display = 'block';
+                }
+
+                // Join the chat room
+                const adminId = localStorage.getItem('adminId');
+                const clientId = localStorage.getItem('clientId');
+                const userId = adminId && adminId !== 'null' ? adminId : clientId;
+                const userType = adminId && adminId !== 'null' ? 'Admin' : 'Client';
+
+                // Leave any existing chat rooms
+                if (socket) {
+                    socket.emit('leaveProductChat', {
+                        chatId: localStorage.getItem('currentChatId')
+                    });
+                }
+
+                // Join the new chat room
+                socket.emit('joinProductChat', {
+                    chatId: chat._id,
+                    productId: productId,
+                    userId: userId,
+                    userType: userType
+                });
+
+                // Mark messages as read and load messages
+                await markMessagesAsRead(chat._id, productId);
+                await loadChatMessages(chat._id);
+
+                // Immediately clear notifications for this chat
+                clearNotificationsForChat(chat._id, productId);
+
+            } catch (error) {
+                console.error('Error starting chat:', error);
+                alert(error.message || 'Failed to start chat');
+            }
+        }
+
+        // Function to send message
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            const chatId = localStorage.getItem('currentChatId');
+            const productId = localStorage.getItem('currentProductId');
+            const adminId = localStorage.getItem('adminId');
+            const clientId = localStorage.getItem('clientId');
+            
+            // Determine user type and ID
+            let userType, userId;
+            if (adminId && adminId !== 'null' && adminId !== null) {
+                userType = 'Admin';
+                userId = adminId;
+            } else if (clientId && clientId !== 'null' && clientId !== null) {
+                userType = 'Client';
+                userId = clientId;
+            }
+
+            // Gather sender info from localStorage
+            const senderInfo = {
+                username: localStorage.getItem('username'),
+                email: localStorage.getItem('email'),
+                phoneNumber: localStorage.getItem('phoneNumber'),
+                firstName: localStorage.getItem('firstName'),
+                lastName: localStorage.getItem('lastName'),
+                gender: localStorage.getItem('gender'),
+                age: localStorage.getItem('age'),
+                userType: userType
+            };
+
+            console.log('Sending message with:', {
+                message,
+                chatId,
+                productId,
+                userId,
+                userType,
+                senderInfo
+            });
+
+            if (!message) {
+                alert('Please enter a message');
+                return;
+            }
+
+            if (!chatId || !productId) {
+                alert('No active chat session');
+                return;
+            }
+
+            if (!userId) {
+                alert('Please log in to send messages');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            try {
+                // First emit the message to socket
+                if (socket) {
+                    socket.emit('productChatMessage', {
+                        chatId: chatId,
+                        productId: productId,
+                        message: message,
+                        senderId: userId,
+                        senderType: userType,
+                        senderInfo: senderInfo
+                    });
+                }
+
+                // Clear input
+                messageInput.value = '';
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert(error.message || 'Failed to send message');
+            }
+        }
+
+        // Location sharing functionality
+        async function shareLocation() {
+            const locationButton = document.getElementById('locationButton');
+            const chatId = localStorage.getItem('currentChatId');
+            const productId = localStorage.getItem('currentProductId');
+            const adminId = localStorage.getItem('adminId');
+            const clientId = localStorage.getItem('clientId');
+            
+            // Determine user type and ID
+            let userType, userId;
+            if (adminId && adminId !== 'null' && adminId !== null) {
+                userType = 'Admin';
+                userId = adminId;
+            } else if (clientId && clientId !== 'null' && clientId !== null) {
+                userType = 'Client';
+                userId = clientId;
+            }
+
+            if (!chatId || !productId) {
+                alert('No active chat session');
+                return;
+            }
+
+            if (!userId) {
+                alert('Please log in to share location');
+                return;
+            }
+
+            // Disable button and show loading state
+            locationButton.disabled = true;
+            locationButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                // Get user's current location
+                const position = await getCurrentPosition();
+                const { latitude, longitude } = position.coords;
+
+                // Get address from coordinates
+                const address = await getAddressFromCoords(latitude, longitude);
+
+                // Create location message
+                const locationData = {
+                    type: 'location',
+                    latitude: latitude,
+                    longitude: longitude,
+                    address: address,
+                    timestamp: new Date().toISOString()
+                };
+
+                // Send location message through socket
+                if (socket) {
+                    socket.emit('productChatMessage', {
+                        chatId: chatId,
+                        productId: productId,
+                        message: JSON.stringify(locationData),
+                        senderId: userId,
+                        senderType: userType,
+                        messageType: 'location'
+                    });
+                }
+
+                // Show success message
+                showLocationMessage(locationData, true, 'You');
+
+            } catch (error) {
+                console.error('Error sharing location:', error);
+                let errorMessage = 'Failed to share location';
+                
+                if (error.code === 1) {
+                    errorMessage = 'Location access denied. Please allow location access in your browser settings.';
+                } else if (error.code === 2) {
+                    errorMessage = 'Location unavailable. Please check your device location settings.';
+                } else if (error.code === 3) {
+                    errorMessage = 'Location request timed out. Please try again.';
+                }
+                
+                showLocationError(errorMessage);
+            } finally {
+                // Re-enable button
+                locationButton.disabled = false;
+                locationButton.innerHTML = '<i class="fas fa-map-marker-alt"></i>';
+            }
+        }
+
+        // Get current position with timeout
+        function getCurrentPosition() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation is not supported by this browser'));
+                    return;
+                }
+
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 300000 // 5 minutes
+                };
+
+                navigator.geolocation.getCurrentPosition(resolve, reject, options);
+            });
+        }
+
+        // Get address from coordinates using reverse geocoding
+        async function getAddressFromCoords(latitude, longitude) {
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+                );
+                
+                if (!response.ok) {
+                    throw new Error('Failed to get address');
+                }
+
+                const data = await response.json();
+                
+                if (data.display_name) {
+                    return data.display_name;
+                } else {
+                    return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+                }
+            } catch (error) {
+                console.error('Error getting address:', error);
+                return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+            }
+        }
+
+        // Show location message in chat
+        function showLocationMessage(locationData, isOwnMessage = false, senderName = 'You') {
+            const chatMessages = document.getElementById('messages');
+            if (!chatMessages) return;
+
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${isOwnMessage ? 'sent' : 'received'}`;
+            
+            const locationDiv = document.createElement('div');
+            locationDiv.className = 'location-message';
+            
+            locationDiv.innerHTML = `
+                <div class="location-title">
+                    <i class="fas fa-map-marker-alt"></i> Location Shared by ${senderName}
+                </div>
+                <div class="location-coords">
+                    ${locationData.latitude.toFixed(6)}, ${locationData.longitude.toFixed(6)}
+                </div>
+                <div class="location-address">
+                    ${locationData.address}
+                </div>
+                <a href="https://www.google.com/maps?q=${locationData.latitude},${locationData.longitude}" 
+                   target="_blank" class="open-maps-btn">
+                    <i class="fas fa-external-link-alt"></i> Open in Maps
+                </a>
+            `;
+            
+            messageElement.appendChild(locationDiv);
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // If this is our own message, generate a temporary ID to prevent duplicates
+            if (isOwnMessage) {
+                const tempId = `temp-location-${Date.now()}-${Math.random()}`;
+                processedMessageIds.add(tempId);
+            }
+        }
+
+        // Show location error message
+        function showLocationError(errorMessage) {
+            const chatMessages = document.getElementById('messages');
+            if (!chatMessages) return;
+
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message sent';
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'location-error';
+            errorDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i> ${errorMessage}
+            `;
+            
+            messageElement.appendChild(errorDiv);
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Load Products
+        async function loadProducts() {
+            try {
+                const response = await fetch('https://my-node-backend-fcdy.onrender.com/api/products');
+                const allProductsData = await response.json();
+                // Filter out sold products, only keep available and pending
+                allProducts = allProductsData.filter(product => 
+                    product.status === 'available' || product.status === 'pending'
+                );
+                renderProducts(allProducts);
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        function renderProducts(products) {
+            const grid = document.querySelector('.products-grid');
+            grid.innerHTML = '';
+            if (products.length === 0) {
+                grid.innerHTML = '<p>No products found.</p>';
+                return;
+            }
+            products.forEach(product => {
+                grid.appendChild(createProductCard(product));
+            });
+        }
+
+        // Search and filter logic
+        function filterAndRenderProducts() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            let filtered = allProducts;
+            if (search) {
+                filtered = filtered.filter(p => p.title && p.title.toLowerCase().includes(search));
+            }
+            if (category) {
+                filtered = filtered.filter(p => p.category === category);
+            }
+            renderProducts(filtered);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', filterAndRenderProducts);
+        document.getElementById('categoryFilter').addEventListener('change', filterAndRenderProducts);
+
+        // Create Product Card
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.__productId = product._id; // For easy DOM update
+            
+            // Get the first image URL, or use a placeholder if no images
+            const imageUrl = product.images && product.images.length > 0 
+                ? product.images[0].image_data 
+                : 'placeholder.jpg';
+            
+            card.innerHTML = `
+                <div class="product-image-container">
+                    <img src="${imageUrl}" alt="${product.title}" class="product-image" onerror="this.src='placeholder.jpg'">
+                    <div class="notification-dot" id="notification-${product._id}" style="display: none;"></div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">${product.title}</h3>
+                    <p class="product-price">$${product.price}</p>
+                    <p class="product-description">${product.description}</p>
+                    <div class="product-meta">
+                        <span class="product-status ${product.status}">${product.status}</span>
+                    </div>
+                </div>
+            `;
+
+            // Add click event to show product details
+            card.addEventListener('click', () => {
+                // Hide notification dot when product is clicked
+                 const notificationDot = document.getElementById(`notification-${product._id}`);
+    if (notificationDot) {
+        notificationDot.style.display = 'none';  // Hide the dot when user opens the product chat
+    }
+                showProductDetails(product);
+            });
+            
+            return card;
+        }
+
+        // Initialize Socket.IO when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            const adminId = localStorage.getItem('adminId');
+            const clientId = localStorage.getItem('clientId');
+            const adminInfo = JSON.parse(localStorage.getItem('adminInfo') || '{}');
+            
+            // Determine user type and ID
+            let userType, userId;
+            if (adminId && adminId !== 'null' && adminId !== null) {
+                userType = 'Admin';
+                userId = adminId;
+            } else if (clientId && clientId !== 'null' && clientId !== null) {
+                userType = 'Client';
+                userId = clientId;
+            }
+
+            console.log('User authentication check:', {
+                adminId,
+                clientId,
+                adminInfo,
+                userType,
+                userId
+            });
+
+            if (!token || !userId) {
+                console.log('User not logged in');
+                // Redirect to login page or show login modal
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Socket.io connection
+            socket = io('https://my-node-backend-fcdy.onrender.com', {
+                auth: {
+                    token: token
+                }
+            });
+
+            // Socket event listeners
+            socket.on('connect', () => {
+                console.log('Connected to product chat server');
+                // Send user login event with userId and userType
+                socket.emit('userLogin', { 
+                    userId: userId, 
+                    userType: userType 
+                });
+                loadUnreadMessages();
+            });
+
+            socket.on('messageSent', async (data) => {
+                console.log('Message sent response:', data);
+                if (data.success && data.message && !processedMessageIds.has(data.message._id)) {
+                    processedMessageIds.add(data.message._id);
+                    
+                    // Get current user ID to check if this is our own message
+                    const adminId = localStorage.getItem('adminId');
+                    const clientId = localStorage.getItem('clientId');
+                    const currentUserId = (adminId && adminId !== 'null' && adminId !== null) ? adminId : 
+                                        (clientId && clientId !== 'null' && clientId !== null) ? clientId : null;
+                    
+                    // Only append if it's not our own message (our own messages are already shown)
+                    if (data.message.sender !== currentUserId) {
+                        await appendMessage(data.message);
+                    }
+                }
+            });
+
+            socket.on('chatMessages', async (data) => {
+                console.log('Received chat messages:', data);
+                const currentProductId = localStorage.getItem('currentProductId');
+                
+                // Only process messages if they're for the current product
+                if (data.productId === currentProductId) {
+                    if (data.messages) {
+                        const chatMessages = document.getElementById('messages');
+                        if (chatMessages) {
+                            for (const message of data.messages) {
+                                if (!processedMessageIds.has(message._id)) {
+                                    processedMessageIds.add(message._id);
+                                    await appendMessage(message);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            socket.on('newProductMessage', async (data) => {
+                console.log('📩 Received new message via socket:', data);
+                const message = data.message;
+                const currentProductId = localStorage.getItem('currentProductId');
+                const currentChatId = localStorage.getItem('currentChatId');
+                
+                // Get current user ID properly
+                const adminId = localStorage.getItem('adminId');
+                const clientId = localStorage.getItem('clientId');
+                const currentUserId = (adminId && adminId !== 'null' && adminId !== null) ? adminId : 
+                                    (clientId && clientId !== 'null' && clientId !== null) ? clientId : null;
+                
+                const isChatModalOpen = chatModal && chatModal.style.display === 'block';
+                
+                // Generate a unique ID for the message
+                const messageId = message._id || `${message.sender}-${message.timestamp}-${message.content}`;
+                
+                console.log('Processing message:', {
+                    messageId,
+                    currentUserId,
+                    messageSender: message.sender,
+                    messageSenderModel: message.senderModel,
+                    currentChatId,
+                    dataChatId: data.chatId,
+                    isSameChat: currentChatId === data.chatId,
+                    isFromCurrentUser: message.sender === currentUserId
+                });
+                
+                // Only process if it's a new message and not from current user
+                if (message && !processedMessageIds.has(messageId) && message.sender !== currentUserId) {
+                    processedMessageIds.add(messageId);
+                    
+                    // If we're viewing this specific chat, append message and mark as read, clear notifications, and return
+                    if (currentChatId === data.chatId && isChatModalOpen) {
+                        console.log('Appending message to current chat');
+                        await appendMessage(message);
+                        await markMessagesAsRead(data.chatId, data.productId);
+                        clearNotificationsForChat(data.chatId, data.productId);
+                        return; // Do not add to unread/notifications!
+                    }
+                    
+                        // If we're not viewing this chat, add to unread
+                        console.log('Adding message to unread notifications');
+                        const product = allProducts.find(p => p._id === data.productId);
+                        if (product) {
+                            // Create a unique key for this chat (product + chat)
+                            const chatKey = `${data.productId}-${data.chatId}`;
+                            
+                            // Add to unread messages
+                            const messages = unreadMessages.get(chatKey) || [];
+                            messages.push(message);
+                            unreadMessages.set(chatKey, messages);
+                            totalUnreadCount++;
+                            updateNotificationCounter();
+                        
+                        // Determine sender type - try multiple sources
+                        let senderType = message.senderModel;
+                        if (!senderType && data.senderType) {
+                            senderType = data.senderType;
+                        }
+                        if (!senderType) {
+                            // Try to determine from user IDs
+                            if (message.sender === adminId) {
+                                senderType = 'Admin';
+                            } else if (message.sender === clientId) {
+                                senderType = 'Client';
+                            } else {
+                                senderType = 'User';
+                            }
+                        }
+                        
+                        // Use senderInfo from message if available
+                        let senderInfo = message.senderInfo || data.senderInfo;
+                        if (!senderInfo) senderInfo = null;
+                        
+                        console.log('Sending to addNotificationToDropdown:', {
+                            senderId: message.sender,
+                            senderType: senderType,
+                            senderInfo: senderInfo
+                        });
+                            
+                            // Add to dropdown with chat info
+                        addNotificationToDropdown(message, data.productId, product.title, data.chatId, message.sender, senderType, senderInfo);
+                            
+                            // Show notification dot on product card
+                            const notificationDot = document.getElementById(`notification-${data.productId}`);
+                            if (notificationDot) {
+                                notificationDot.style.display = 'block';
+                        }
+                    }
+                }
+
+                console.log('Message data:', {
+                    currentUserId,
+                    currentProductId,
+                    currentChatId,
+                    messageSender: message.sender,
+                    productId: data.productId,
+                    chatId: data.chatId,
+                    isDifferentSender: message.sender !== currentUserId,
+                    isDifferentProduct: data.productId !== currentProductId,
+                    isDifferentChat: currentChatId !== data.chatId
+                });
+                
+                // Show notification for different product or chat
+                if (data.productId !== currentProductId || currentChatId !== data.chatId) {
+                    console.log('✅ Showing notification for product:', data.productId);
+                    const product = allProducts.find(p => p._id === data.productId);
+                    showNotification(`New message from ${message.senderModel} for ${product ? product.title : 'product'}`);
+                }
+            });
+
+            socket.on('chatJoined', (data) => {
+                if (data.success) {
+                    console.log('Successfully joined chat:', data);
+                    // Load messages after successfully joining
+                    loadChatMessages(data.chatId);
+                } else {
+                    console.error('Failed to join chat:', data.message);
+                    alert('Failed to join chat: ' + data.message);
+                }
+            });
+
+            socket.on('productChatError', (error) => {
+                console.error('Chat error:', error);
+                alert(error);
+            });
+
+            // Initialize UI elements
+            const productsGrid = document.getElementById('productsGrid');
+            const addProductModal = document.getElementById('addProductModal');
+            const addProductForm = document.getElementById('addProductForm');
+            const chatModal = document.getElementById('chatModal');
+            const messageInput = document.getElementById('messageInput');
+
+            // Add chat modal close button event listener
+            const chatCloseButton = chatModal ? chatModal.querySelector('.close') : null;
+            if (chatCloseButton) {
+                chatCloseButton.addEventListener('click', () => {
+                    chatModal.style.display = 'none';
+
+                    // Get currentProductId BEFORE clearing
+                    const currentProductId = localStorage.getItem('currentProductId');
+
+                    localStorage.removeItem('currentChatId');
+                    localStorage.removeItem('currentProductId');
+                    clearProcessedMessages();
+
+                    if (currentProductId) {
+                        const notificationDot = document.getElementById(`notification-${currentProductId}`);
+                        if (notificationDot) {
+                            notificationDot.style.display = 'none';
+                        }
+                    }
+                });
+            }
+
+            // Add message input event listener
+            if (messageInput) {
+                messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+
+            // Add location button event listener
+            const locationButton = document.getElementById('locationButton');
+            if (locationButton) {
+                locationButton.addEventListener('click', shareLocation);
+            } else {
+                // Fallback: try to set up the listener when the chat modal is opened
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'childList') {
+                            const locationBtn = document.getElementById('locationButton');
+                            if (locationBtn && !locationBtn.hasAttribute('data-location-listener')) {
+                                locationBtn.addEventListener('click', shareLocation);
+                                locationBtn.setAttribute('data-location-listener', 'true');
+                            }
+                        }
+                    });
+                });
+                
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+
+            // Add event listeners for notifications
+            const notificationIcon = document.getElementById('notificationIcon');
+            if (notificationIcon) {
+                notificationIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const dropdown = document.getElementById('notificationsDropdown');
+                    dropdown.classList.toggle('show');
+                });
+            }
+
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('notificationsDropdown');
+                const icon = document.getElementById('notificationIcon');
+                if (dropdown && icon && !dropdown.contains(e.target) && !icon.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            // Initialize notification counter
+            updateNotificationCounter();
+
+            // Load initial products
+            loadProducts();
+
+            // Setup image upload functionality
+            setupImageUpload();
+        });
+
+        // Add Product Modal
+        const addProductBtn = document.getElementById('addProductBtn');
+        const addProductModal = document.getElementById('addProductModal');
+        const addProductForm = document.getElementById('addProductForm');
+        const closeAddProduct = addProductModal.querySelector('.close');
+        const imagePreview = document.getElementById('imagePreview');
+
+        addProductBtn.onclick = () => {
+            addProductModal.style.display = 'block';
+        };
+
+        closeAddProduct.onclick = () => {
+            addProductModal.style.display = 'none';
+        };
+
+        window.onclick = (event) => {
+            if (event.target === addProductModal) {
+                addProductModal.style.display = 'none';
+            }
+        };
+
+        // Store selected files
+        let selectedFiles = new Set();
+
+        // Image preview
+        document.getElementById('images').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const previewContainer = imagePreview;
+            const fileInput = document.getElementById('images');
+            
+            console.log('Files selected:', files.length);
+            
+            // Add new files to the set
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                console.log(`Processing file ${i + 1}:`, file.name);
+                
+                if (file.type.startsWith('image/')) {
+                    selectedFiles.add(file);
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'preview-item';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.dataset.fileName = file.name;
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'remove-preview';
+                        removeBtn.innerHTML = '&times;';
+                        removeBtn.onclick = function() {
+                            previewDiv.remove();
+                            // Remove the file from the set
+                            selectedFiles.delete(file);
+                            updateFileInput();
+                            console.log('Files after removal:', selectedFiles.size);
+                        };
+                        
+                        previewDiv.appendChild(img);
+                        previewDiv.appendChild(removeBtn);
+                        previewContainer.appendChild(previewDiv);
+                        console.log('Preview added for:', file.name);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+            
+            updateFileInput();
+        });
+
+        // Function to update the file input with all selected files
+        function updateFileInput() {
+            const fileInput = document.getElementById('images');
+            const dataTransfer = new DataTransfer();
+            
+            selectedFiles.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            
+            fileInput.files = dataTransfer.files;
+            console.log('Total files after update:', fileInput.files.length);
+            
+            // Debug: Log all files in the input
+            for (let i = 0; i < fileInput.files.length; i++) {
+                console.log(`File ${i + 1} in input:`, {
+                    name: fileInput.files[i].name,
+                    type: fileInput.files[i].type,
+                    size: fileInput.files[i].size
+                });
+            }
+        }
+
+        // Add Product Form Submit
+        addProductForm.onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('title', document.getElementById('title').value);
+            formData.append('description', document.getElementById('description').value);
+            formData.append('price', document.getElementById('price').value);
+            formData.append('category', document.getElementById('category').value);
+            formData.append('condition', document.getElementById('condition').value);
+            
+            const imageInput = document.getElementById('images');
+            const imageFiles = imageInput.files;
+            console.log('Number of images to upload:', imageFiles.length);
+            
+            // Debug: Log all files
+            for (let i = 0; i < imageFiles.length; i++) {
+                console.log(`File ${i + 1}:`, {
+                    name: imageFiles[i].name,
+                    type: imageFiles[i].type,
+                    size: imageFiles[i].size
+                });
+            }
+            
+            // Clear any existing images in the FormData
+            formData.delete('images');
+            
+            // Append each image file
+            for (let i = 0; i < imageFiles.length; i++) {
+                formData.append('images', imageFiles[i]);
+                console.log(`Appending image ${i + 1}:`, imageFiles[i].name);
+            }
+            
+            // Debug: Log FormData contents
+            for (let pair of formData.entries()) {
+                console.log(pair[0], pair[1]);
+            }
+            
+            try {
+                const response = await fetch('https://my-node-backend-fcdy.onrender.com/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const product = await response.json();
+                    console.log('Product created with images:', product.images.length);
+                    console.log('Product details:', product);
+                    addProductModal.style.display = 'none';
+                    addProductForm.reset();
+                    imagePreview.innerHTML = '';
+                    selectedFiles.clear(); // Clear selected files
+                    loadProducts(); // Refresh the product list
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Failed to add product');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to add product');
+            }
+        };
+
+        // Function to update notification counter
+        function updateNotificationCounter() {
+            const counter = document.getElementById('notificationCounter');
+            if (counter) {
+                counter.textContent = totalUnreadCount;
+                counter.style.display = totalUnreadCount > 0 ? 'inline' : 'none';
+            }
+        }
+
+        // Function to load unread messages on page load
+        async function loadUnreadMessages() {
+            try {
+                const response = await fetch('https://my-node-backend-fcdy.onrender.com/api/products/unread-messages', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to load unread messages');
+                }
+
+                if (data.success) {
+                    // Update total unread count
+                    totalUnreadCount = data.totalUnread;
+                    updateNotificationCounter();
+
+                    // Update notification dots for each product
+                    for (const [productId, info] of Object.entries(data.unreadByProduct)) {
+                        if (info.count > 0) {
+                            const notificationDot = document.getElementById(`notification-${productId}`);
+                            if (notificationDot) {
+                                notificationDot.style.display = 'block';
+                            }
+
+                            // Add to unread messages map
+                            if (!unreadMessages.has(productId)) {
+                                unreadMessages.set(productId, []);
+                            }
+
+                            // Add notification to dropdown with product title
+                            addNotificationToDropdown({
+                                content: `You have ${info.count} unread message(s)`,
+                                timestamp: new Date()
+                            }, productId, info.title, null, null, 'User');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading unread messages:', error);
+            }
+        }
+
+        // Update the addNotificationToDropdown function to include product ID
+        function addNotificationToDropdown(message, productId, productTitle, chatId, senderId, senderType, senderInfo) {
+            console.log('addNotificationToDropdown called with:', {
+                message,
+                productId,
+                productTitle,
+                chatId,
+                senderId,
+                senderType,
+                senderInfo
+            });
+            
+            const dropdown = document.getElementById('notificationsDropdown');
+            const notificationItem = document.createElement('div');
+            notificationItem.className = 'notification-item unread';
+            notificationItem.setAttribute('data-product-id', productId);
+            if (chatId) {
+                notificationItem.setAttribute('data-chat-id', chatId);
+            }
+            
+            const timestamp = new Date(message.timestamp).toLocaleString();
+            
+            // Handle location messages
+            let messagePreview = message.content;
+            if (message.messageType === 'location' || (message.content && message.content.startsWith('{"type":"location"'))) {
+                try {
+                    const locationData = typeof message.content === 'string' ? JSON.parse(message.content) : message.content;
+                    if (locationData.type === 'location') {
+                        messagePreview = `📍 Location shared: ${locationData.address}`;
+                    }
+                } catch (error) {
+                    messagePreview = '📍 Location shared';
+                }
+            } else if (message.messageType === 'image' || (message.content && message.content.startsWith('{"type":"image"'))) {
+                // Handle image messages
+                try {
+                    const imageData = typeof message.content === 'string' ? JSON.parse(message.content) : message.content;
+                    if (imageData.type === 'image') {
+                        messagePreview = `🖼️ Image shared: ${imageData.fileName}`;
+                    }
+                } catch (error) {
+                    messagePreview = '🖼️ Image shared';
+                }
+            }
+            
+            // Determine sender information - try multiple sources
+            let finalSenderId = senderId;
+            let finalSenderType = senderType;
+            let finalSenderInfo = senderInfo;
+            
+            // If senderId is not provided, try to get it from the message
+            if (!finalSenderId && message.sender) {
+                finalSenderId = message.sender;
+            }
+            
+            // If senderType is not provided, try to get it from the message
+            if (!finalSenderType && message.senderModel) {
+                finalSenderType = message.senderModel;
+            }
+            
+            // Fallback to 'User' if still no sender type
+            if (!finalSenderType) {
+                finalSenderType = 'User';
+            }
+            
+            // Only show profile button if we have sender information
+            const profileButton = finalSenderId ? 
+                `<button class=\"profile-button\" onclick=\"viewSenderProfileFromNotification('${finalSenderId}', '${finalSenderType}', ${finalSenderInfo ? JSON.stringify(finalSenderInfo).replace(/"/g, '&quot;') : 'null'})\">\n                    <i class=\"fas fa-user\"></i> View ${finalSenderType} Profile\n                </button>` : '';
+            
+            notificationItem.innerHTML = `
+                <div class=\"product-title\">${productTitle}</div>
+                <div class=\"message-preview\">${messagePreview}</div>
+                <div class=\"message-time\">${timestamp}</div>
+                ${profileButton}
+            `;
+
+            notificationItem.addEventListener('click', async (e) => {
+                // Don't trigger if clicking on profile button
+                if (e.target.closest('.profile-button')) {
+                    return;
+                }
+                
+                // Mark as read
+                notificationItem.classList.remove('unread');
+
+                // Close dropdown
+                document.getElementById('notificationsDropdown').classList.remove('show');
+                
+                // Open chat directly instead of showing product details
+                if (chatId) {
+                    // If we have a specific chat ID, open that chat directly
+                    await openChat(chatId, productId);
+                } else {
+                    // If no specific chat ID, start a new chat (for buyers)
+                    await startChat(productId);
+                }
+            });
+
+            // Insert at the top of the dropdown
+            dropdown.insertBefore(notificationItem, dropdown.firstChild);
+        }
+
+        // Function to view sender profile from notification
+        async function viewSenderProfileFromNotification(senderId, senderType, senderInfo) {
+            try {
+                // Close notification dropdown
+                document.getElementById('notificationsDropdown').classList.remove('show');
+                
+                // Show sender profile, pass senderInfo as fallback
+                await showUserProfile(senderId, senderType, senderInfo);
+                
+            } catch (error) {
+                console.error('Error viewing sender profile:', error);
+                alert('Failed to load sender profile');
+            }
+        }
+
+        // Function to show notification toast
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'notification-toast';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #1a73e8;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                max-width: 300px;
+                word-wrap: break-word;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            notification.textContent = message;
+            
+            // Add CSS animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideOut {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+            
+            // Allow manual close on click
+            notification.addEventListener('click', () => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            });
+        }
+
+        // Function to show user profile
+        async function showUserProfile(userId, userType = 'Client', fallbackUserInfo = null) {
+            try {
+                console.log('Showing profile for user:', userId, userType, 'fallbackUserInfo:', fallbackUserInfo);
+                
+                // Fetch user's products (including sold ones) using existing endpoint
+                const response = await fetch(`https://my-node-backend-fcdy.onrender.com/api/products/seller/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user products');
+                }
+
+                const userProducts = await response.json();
+                console.log('User products:', userProducts);
+
+                // Calculate stats
+                const totalProducts = userProducts.length;
+                const availableProducts = userProducts.filter(p => p.status === 'available').length;
+                const pendingProducts = userProducts.filter(p => p.status === 'pending').length;
+                const soldProducts = userProducts.filter(p => p.status === 'sold').length;
+
+                // Update profile header
+                document.getElementById('profileName').textContent = `${userType} Profile`;
+                document.getElementById('totalProducts').textContent = totalProducts;
+                document.getElementById('availableProducts').textContent = availableProducts + pendingProducts;
+                document.getElementById('soldProducts').textContent = soldProducts;
+
+                // Create avatar with first letter of user type
+                const avatar = document.getElementById('profileAvatar');
+                avatar.textContent = userType.charAt(0);
+
+                // Always use fallbackUserInfo (senderInfo) as primary if present
+                let userInfo = null;
+                if (fallbackUserInfo) {
+                    userInfo = fallbackUserInfo;
+                    console.log('Using fallbackUserInfo as primary:', fallbackUserInfo);
+                } else {
+                    // Try to get from localStorage for ANY userId (not just current user)
+                    const localClientId = localStorage.getItem('clientId');
+                    const localAdminId = localStorage.getItem('adminId');
+                    if (String(localClientId) === String(userId)) {
+                        userInfo = {
+                            username: localStorage.getItem('username'),
+                            email: localStorage.getItem('email'),
+                            phoneNumber: localStorage.getItem('phoneNumber'),
+                            firstName: localStorage.getItem('firstName'),
+                            lastName: localStorage.getItem('lastName'),
+                            gender: localStorage.getItem('gender'),
+                            age: localStorage.getItem('age'),
+                        };
+                        console.log('Found client info in localStorage:', userInfo);
+                    } else if (String(localAdminId) === String(userId)) {
+                        userInfo = {
+                            username: localStorage.getItem('username'),
+                            email: localStorage.getItem('email'),
+                            phoneNumber: localStorage.getItem('phoneNumber'),
+                            firstName: localStorage.getItem('firstName'),
+                            lastName: localStorage.getItem('lastName'),
+                            gender: localStorage.getItem('gender'),
+                            age: localStorage.getItem('age'),
+                        };
+                        console.log('Found admin info in localStorage:', userInfo);
+                    } else {
+                        // If admin, look up in clients array
+                        const adminClients = JSON.parse(localStorage.getItem('clients') || '[]');
+                        userInfo = adminClients.find(c => String(c.clientId) === String(userId));
+                        if (userInfo) {
+                            console.log('Found client info in admin clients array:', userInfo);
+                        }
+                    }
+                    // If still not found, try to use seller info from product (for seller profiles)
+                    if (!userInfo && userProducts.length > 0 && userProducts[0].seller) {
+                        userInfo = userProducts[0].seller;
+                        console.log('Found seller info in product:', userInfo);
+                    }
+                }
+
+                // If no user info found and user has no products, fetch from backend
+                if (!userInfo && totalProducts === 0) {
+                    console.log('No user info found and no products, fetching from backend...');
+                    
+                    // Try to fetch as admin first
+                    try {
+                        const adminResponse = await fetch(`https://my-node-backend-fcdy.onrender.com/admins-profile/${userId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            }
+                        });
+                        
+                        if (adminResponse.ok) {
+                            const adminData = await adminResponse.json();
+                            userInfo = adminData.admin;
+                            userType = 'Admin';
+                            console.log('Found admin info from backend:', userInfo);
+                        } else {
+                            // If not admin, try as client
+                            const clientResponse = await fetch(`https://my-node-backend-fcdy.onrender.com/clients-profile/${userId}`, {
+                                headers: {
+                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                }
+                            });
+                            
+                            if (clientResponse.ok) {
+                                const clientData = await clientResponse.json();
+                                userInfo = clientData.client;
+                                userType = 'Client';
+                                console.log('Found client info from backend:', userInfo);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error fetching user info from backend:', error);
+                    }
+                }
+
+                if (!userInfo) {
+                    console.log('No user info found for userId:', userId, 'userType:', userType);
+                }
+
+                // Determine the correct user type based on ID
+                let displayUserType = userType;
+                if (userInfo && userInfo.clientId) {
+                    displayUserType = 'Client';
+                } else if (userInfo && userInfo.adminId) {
+                    displayUserType = 'Admin';
+                } else {
+                    // Fallback: check if userId matches adminId or clientId in localStorage
+                    const localClientId = localStorage.getItem('clientId');
+                    const localAdminId = localStorage.getItem('adminId');
+                    if (String(localClientId) === String(userId)) {
+                        displayUserType = 'Client';
+                    } else if (String(localAdminId) === String(userId)) {
+                        displayUserType = 'Admin';
+                    }
+                }
+
+                // Update profile header with correct user type
+                document.getElementById('profileName').textContent = `${displayUserType} Profile`;
+                avatar.textContent = displayUserType.charAt(0);
+
+                // Render products or show buyer info
+                if (totalProducts > 0) {
+                    // User has products - show product grid
+                    renderProfileProducts(userProducts, userInfo, displayUserType);
+                } else {
+                    // User is a buyer with no products - show buyer info
+                    renderBuyerProfile(userId, displayUserType, userInfo);
+                }
+
+                // Show the modal
+                const profileModal = document.getElementById('userProfileModal');
+                profileModal.style.display = 'block';
+
+                // Add close functionality
+                const closeButton = profileModal.querySelector('.close-profile');
+                closeButton.onclick = () => {
+                    profileModal.style.display = 'none';
+                };
+
+                // Close modal when clicking outside
+                window.onclick = (event) => {
+                    if (event.target === profileModal) {
+                        profileModal.style.display = 'none';
+                    }
+                };
+
+            } catch (error) {
+                console.error('Error showing user profile:', error);
+                alert('Failed to load user profile');
+            }
+        }
+
+        // Function to render buyer profile (for users with no products)
+        function renderBuyerProfile(userId, userType, userInfo) {
+            const grid = document.getElementById('profileProductsGrid');
+            let infoHtml = '';
+            if (userInfo) {
+                infoHtml = `
+                    <div style="text-align: left; margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <h3 style="margin-top:0;">${userInfo.username ? userInfo.username : ''} <span style='font-size:14px;color:#888;'>(${userType})</span></h3>
+                        <div><b>Name:</b> ${userInfo.firstName || ''} ${userInfo.lastName || ''}</div>
+                        <div><b>Email:</b> ${userInfo.email || ''}</div>
+                        <div><b>Phone:</b> ${userInfo.phoneNumber || ''}</div>
+                        <div><b>Gender:</b> ${userInfo.gender || ''}</div>
+                        <div><b>Age:</b> ${userInfo.age || ''}</div>
+                    </div>
+                `;
+            } else {
+                infoHtml = `<div style='color:#888;text-align:center;margin-bottom:20px;'>No user info found for this ${userType.toLowerCase()}.</div>`;
+            }
+            grid.innerHTML = `
+                ${infoHtml}
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <i class="fas fa-user" style="font-size: 48px; color: #1a73e8; margin-bottom: 20px;"></i>
+                    <h3>${userType} Account</h3>
+                    <p>This user is a buyer and hasn't posted any products yet.</p>
+                    <p>They can browse and purchase items from other sellers.</p>
+                </div>
+            `;
+        }
+
+        // Function to render profile products
+        function renderProfileProducts(products, userInfo, displayUserType) {
+            const grid = document.getElementById('profileProductsGrid');
+            let infoHtml = '';
+            if (userInfo) {
+                infoHtml = `
+                    <div style="text-align: left; margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <h3 style="margin-top:0;">${userInfo.username ? userInfo.username : ''} <span style='font-size:14px;color:#888;'>(${displayUserType})</span></h3>
+                        <div><b>Name:</b> ${userInfo.firstName || ''} ${userInfo.lastName || ''}</div>
+                        <div><b>Email:</b> ${userInfo.email || ''}</div>
+                        <div><b>Phone:</b> ${userInfo.phoneNumber || ''}</div>
+                        <div><b>Gender:</b> ${userInfo.gender || ''}</div>
+                        <div><b>Age:</b> ${userInfo.age || ''}</div>
+                    </div>
+                `;
+            } else {
+                infoHtml = `<div style='color:#888;text-align:center;margin-bottom:20px;'>No user info found for this seller.</div>`;
+            }
+            grid.innerHTML = infoHtml;
+
+            if (products.length === 0) {
+                grid.innerHTML += '<p>No products found.</p>';
+                return;
+            }
+
+            const gridContainer = document.createElement('div');
+            gridContainer.className = 'profile-products-grid';
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'profile-product-card';
+                
+                // Get the first image URL, or use a placeholder if no images
+                const imageUrl = product.images && product.images.length > 0 
+                    ? product.images[0].image_data 
+                    : 'placeholder.jpg';
+                
+                card.innerHTML = `
+                    <img src="${imageUrl}" alt="${product.title}" class="profile-product-image" onerror="this.src='placeholder.jpg'">
+                    <div class="profile-product-info">
+                        <div class="profile-product-title">${product.title}</div>
+                        <div class="profile-product-price">$${product.price}</div>
+                        <div class="profile-product-status ${product.status}">${product.status}</div>
+                    </div>
+                `;
+
+                // Add click event to show product details
+                card.addEventListener('click', () => {
+                    showProductDetails(product);
+                    // Close profile modal
+                    document.getElementById('userProfileModal').style.display = 'none';
+                });
+                
+                gridContainer.appendChild(card);
+            });
+            grid.appendChild(gridContainer);
+        }
+
+        // Function to show profile button in product details for sellers
+        function showProfileButtonInDetails(product) {
+            const adminId = localStorage.getItem('adminId');
+            const clientId = localStorage.getItem('clientId');
+            const currentUserId = (adminId && adminId !== 'null' && adminId !== null) ? adminId : 
+                                (clientId && clientId !== 'null' && clientId !== null) ? clientId : null;
+            
+            const isSeller = currentUserId === product.seller._id || currentUserId === product.seller;
+            const viewProfileButton = document.getElementById('viewProfileButton');
+            
+            if (isSeller) {
+                // Show "View My Profile" button for seller
+                viewProfileButton.style.display = 'inline-block';
+                viewProfileButton.innerHTML = '<i class="fas fa-user"></i> View My Profile';
+                viewProfileButton.onclick = () => {
+                    // Determine correct user type based on ID
+                    let userType = 'Client';
+                    if (adminId && adminId !== 'null' && adminId !== null) {
+                        userType = 'Admin';
+                    }
+                    showUserProfile(currentUserId, userType);
+                    // Close product details modal
+                    document.getElementById('productDetailsModal').style.display = 'none';
+                };
+            } else {
+                // Show "View Seller Profile" button for buyer
+                viewProfileButton.style.display = 'inline-block';
+                viewProfileButton.innerHTML = '<i class="fas fa-user"></i> View Seller Profile';
+                viewProfileButton.onclick = () => {
+                    const sellerId = product.seller._id || product.seller;
+                    // Determine seller type based on seller info
+                    let sellerType = 'Client';
+                    if (product.seller && product.seller.userType) {
+                        sellerType = product.seller.userType;
+                    } else if (product.seller && product.seller.adminId) {
+                        sellerType = 'Admin';
+                    } else if (product.seller && product.seller.clientId) {
+                        sellerType = 'Client';
+                    }
+                    showUserProfile(sellerId, sellerType);
+                    // Close product details modal
+                    document.getElementById('productDetailsModal').style.display = 'none';
+                };
+            }
+        }
+
+        // Image upload functionality
+        function setupImageUpload() {
+            const imageUploadButton = document.getElementById('imageUploadButton');
+            const imageUploadInput = document.getElementById('imageUploadInput');
+
+            if (imageUploadButton && imageUploadInput) {
+                imageUploadButton.addEventListener('click', () => {
+                    imageUploadInput.click();
+                });
+
+                imageUploadInput.addEventListener('change', handleImageUpload);
+            }
+        }
+
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                alert('Image size must be less than 5MB');
+                return;
+            }
+
+            const imageUploadButton = document.getElementById('imageUploadButton');
+            const chatId = localStorage.getItem('currentChatId');
+            const productId = localStorage.getItem('currentProductId');
+            const adminId = localStorage.getItem('adminId');
+            const clientId = localStorage.getItem('clientId');
+            
+            // Determine user type and ID
+            let userType, userId;
+            if (adminId && adminId !== 'null' && adminId !== null) {
+                userType = 'Admin';
+                userId = adminId;
+            } else if (clientId && clientId !== 'null' && clientId !== null) {
+                userType = 'Client';
+                userId = clientId;
+            }
+
+            if (!chatId || !productId) {
+                alert('No active chat session');
+                return;
+            }
+
+            if (!userId) {
+                alert('Please log in to send images');
+                return;
+            }
+
+            // Disable button and show loading state
+            imageUploadButton.disabled = true;
+            imageUploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                // Convert image to base64
+                const base64Image = await convertImageToBase64(file);
+                
+                // Create image message data
+                const imageData = {
+                    type: 'image',
+                    imageData: base64Image,
+                    fileName: file.name,
+                    fileSize: file.size,
+                    fileType: file.type,
+                    timestamp: new Date().toISOString()
+                };
+
+                // Send image message through socket
+                if (socket) {
+                    socket.emit('productChatMessage', {
+                        chatId: chatId,
+                        productId: productId,
+                        message: JSON.stringify(imageData),
+                        senderId: userId,
+                        senderType: userType,
+                        messageType: 'image'
+                    });
+                }
+
+                // Show image message in chat
+                showImageMessage(imageData, true, 'You');
+
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                alert('Failed to upload image: ' + error.message);
+            } finally {
+                // Re-enable button and clear input
+                imageUploadButton.disabled = false;
+                imageUploadButton.innerHTML = '<i class="fas fa-image"></i>';
+                event.target.value = ''; // Clear the file input
+            }
+        }
+
+        function convertImageToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('Failed to read image file'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Show image message in chat
+        function showImageMessage(imageData, isOwnMessage = false, senderName = 'You') {
+            const chatMessages = document.getElementById('messages');
+            if (!chatMessages) return;
+
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${isOwnMessage ? 'sent' : 'received'}`;
+            
+            const imageDiv = document.createElement('div');
+            imageDiv.className = 'image-message';
+            
+            // Format file size
+            const fileSizeKB = Math.round(imageData.fileSize / 1024);
+            const fileSizeText = fileSizeKB > 1024 ? 
+                `${(fileSizeKB / 1024).toFixed(1)} MB` : 
+                `${fileSizeKB} KB`;
+            
+            imageDiv.innerHTML = `
+                <div class="image-title">
+                    <i class="fas fa-image"></i> Image shared by ${senderName}
+                </div>
+                <img src="${imageData.imageData}" alt="Shared image" class="chat-image" onclick="showFullImage('${imageData.imageData}', '${imageData.fileName}')">
+                <div class="image-info">
+                    ${imageData.fileName} (${fileSizeText})
+                </div>
+            `;
+            
+            messageElement.appendChild(imageDiv);
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // If this is our own message, generate a temporary ID to prevent duplicates
+            if (isOwnMessage) {
+                const tempId = `temp-image-${Date.now()}-${Math.random()}`;
+                processedMessageIds.add(tempId);
+            }
+        }
+
+        // Show full size image modal
+        function showFullImage(imageData, fileName) {
+            const modal = document.getElementById('fullImageModal');
+            const content = document.getElementById('fullImageContent');
+            
+            content.innerHTML = `<img src="${imageData}" alt="${fileName}" onclick="event.stopPropagation()">`;
+            modal.style.display = 'block';
+            
+            // Close modal when clicking outside the image or on close button
+            modal.onclick = () => {
+                modal.style.display = 'none';
+            };
+            
+            // Close button functionality
+            const closeButton = document.getElementById('fullImageClose');
+            closeButton.onclick = () => {
+                modal.style.display = 'none';
+            };
+            
+            // Close on escape key
+            document.addEventListener('keydown', function closeOnEscape(e) {
+                if (e.key === 'Escape') {
+                    modal.style.display = 'none';
+                    document.removeEventListener('keydown', closeOnEscape);
+                }
+            });
+        }
+    </script>
+</body>
+</html> 
