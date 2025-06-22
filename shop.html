@@ -138,7 +138,7 @@
         }
 
         .message {
-            margin: 5px 0;
+            margin: 50px 0;
             padding: 8px;
             border-radius: 5px;
             max-width: 80%;
@@ -148,6 +148,7 @@
             background: #007bff;
             color: white;
             margin-left: auto;
+            border-radius: 25px;
         }
 
         .message.received {
@@ -158,12 +159,96 @@
         .message-content {
             display: flex;
             flex-direction: column;
+            margin-left: 10px;
         }
 
         .message-content small {
             font-size: 0.7em;
             opacity: 0.7;
             margin-top: 4px;
+        }
+
+        /* Read receipt styles */
+        .message-status {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7em;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.sent {
+            background-color: #999;
+        }
+
+        .status-dot.delivered {
+            background-color: #007bff;
+        }
+
+        .status-dot.read {
+            background-color: #28a745;
+        }
+
+        .status-text {
+            font-size: 0.7em;
+            color: #666;
+        }
+
+        .read-receipt {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            margin-left: 4px;
+        }
+
+        .read-receipt i {
+            font-size: 10px;
+        }
+
+        .read-receipt.sent {
+            color: #999;
+        }
+
+        .read-receipt.delivered {
+            color: #007bff;
+        }
+
+        .read-receipt.read {
+            color: #28a745;
+        }
+
+        /* Sent message specific styles */
+        .message.sent .message-sender {
+            color: rgb(24 17 17 / 90%) !important;
+    border-radius: 10px;
+    box-shadow: -2px 1px 4px 3px rgb(0 0 0 / 36%);        }
+
+        .message.sent .message-status {
+            opacity: 0.9;
+        }
+
+        .message.sent .read-receipt.sent {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .message.sent .read-receipt.delivered {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .message.sent .read-receipt.read {
+            color: rgba(255, 255, 255, 1) !important;
+        }
+
+        .message.sent .status-text {
+            color: rgba(255, 255, 255, 0.9) !important;
         }
 
         .message-input, .modal-content > div[style*='display: flex'] {
@@ -484,6 +569,60 @@
             .products-grid {
                 margin-right: 0;
             }
+        }
+
+        /* Shop Header and Filters Centering */
+        .shop-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .shop-header h1 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+
+        .shop-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .shop-filters {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: white;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+        }
+
+        .shop-filters input,
+        .shop-filters select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .shop-filters input:focus,
+        .shop-filters select:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
         }
 
         /* Product Details Modal */
@@ -1041,6 +1180,140 @@
         .view-profile-btn:hover {
             background: #5a6268;
         }
+
+        /* Typing indicator styles */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin: 5px 0;
+            max-width: 80px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .typing-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .typing-indicator .typing-text {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .typing-indicator .typing-dots {
+            display: flex;
+            gap: 2px;
+        }
+
+        .typing-indicator .dot {
+            width: 6px;
+            height: 6px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing-wave 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .typing-indicator .dot:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+        @keyframes typing-wave {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Hide read receipt and timestamp by default */
+        .message .message-status,
+        .message .message-content small {
+            display: none;
+        }
+
+        /* Show read receipt for the last sent message */
+        .message.sent.last-sent .message-status {
+            display: flex;
+        }
+
+        /* Show timestamp when .show-time is added */
+        .message .message-content.show-time small {
+            display: block;
+            margin-left: 25px;
+        }
+
+        /* Position sender name outside the message bubble */
+        .message {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .message .message-sender {
+            position: absolute;
+            top: -28px;
+            left: 10px;
+            font-weight: bold;
+            font-size: 12px;
+            color: #666;
+            background: white;
+            padding: 12px 6px;
+            border-radius: 4px;
+            z-index: 1;
+            color: rgb(24 17 17 / 90%) !important;
+    border-radius: 10px;
+    box-shadow: -2px 1px 4px 3px rgb(0 0 0 / 36%);        }
+
+        .message.sent .message-sender {
+            right: 10px;
+            left: auto;
+            color: #007bff;
+            background: #f8f9fa;
+        }
+
+        .message .message-content {
+            margin-top: 0;
+        }
+
+        /* Action Button Styles */
+        .action-button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .action-button:hover {
+            background: #1557b0;
+        }
+
+        .action-button i {
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -1152,6 +1425,15 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <div class="messages" id="messages"></div>
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator">
+                <span class="typing-text">typing</span>
+                <div class="typing-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
             <!-- Product Status Control (Seller Only) -->
             <div id="statusControl" style="display:none; margin: 10px 0;">
                 <label for="productStatusSelect"><b>Change Product Status:</b></label>
@@ -1285,6 +1567,7 @@
 
         // Function to show product details and start chat
         function showProductDetails(product) {
+            console.log("the product is: ", product)
             const modal = document.getElementById('productDetailsModal');
             const slider = document.getElementById('imageSlider');
             const nav = document.getElementById('sliderNav');
@@ -1324,7 +1607,7 @@
             document.getElementById('detailsCategory').textContent = product.category;
             document.getElementById('detailsCondition').textContent = product.condition;
             document.getElementById('detailsStatus').textContent = product.status;
-            document.getElementById('detailsSeller').textContent = product.seller.username;
+            document.getElementById('detailsSeller').textContent = product.seller ? product.seller.username : 'Unknown Seller';
             
             // Check if current user is the seller
             const adminId = localStorage.getItem('adminId');
@@ -1332,7 +1615,7 @@
             const currentUserId = (adminId && adminId !== 'null' && adminId !== null) ? adminId : 
                                 (clientId && clientId !== 'null' && clientId !== null) ? clientId : null;
             
-            const isSeller = currentUserId === product.seller._id || currentUserId === product.seller;
+            const isSeller = product.seller && (currentUserId === product.seller._id || currentUserId === product.seller);
             
             // Update chat button based on user role
             const chatButton = document.getElementById('detailsChatButton');
@@ -1427,7 +1710,22 @@
 
                 // Filter out chats where the buyer is the same as the current user (seller)
                 const filteredChats = chats.filter(chat => {
-                    const buyerId = chat.buyer._id || chat.buyer;
+                    // Safely get buyer ID with fallbacks
+                    let buyerId = null;
+                    if (chat.buyer) {
+                        if (typeof chat.buyer === 'object' && chat.buyer._id) {
+                            buyerId = chat.buyer._id;
+                        } else if (typeof chat.buyer === 'string') {
+                            buyerId = chat.buyer;
+                        }
+                    }
+                    
+                    // If we can't determine buyer ID, include the chat (better to show than hide)
+                    if (!buyerId) {
+                        console.warn('Could not determine buyer ID for chat:', chat);
+                        return true;
+                    }
+                    
                     return buyerId !== currentUserId;
                 });
 
@@ -1469,9 +1767,9 @@
                     chatItem.innerHTML = `
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <strong>${chat.buyer.username || 'Unknown Buyer'}</strong>
+                                <strong>${chat.buyer && chat.buyer.username ? chat.buyer.username : 'Unknown Buyer'}</strong>
                                 <br>
-                                <small>${chat.messages.length} messages</small>
+                                <small>${chat.messages ? chat.messages.length : 0} messages</small>
                             </div>
                             <div>
                                 ${unreadBadge}
@@ -1536,13 +1834,9 @@
                 // Show the chat modal
                 const chatModal = document.getElementById('chatModal');
                 if (chatModal) {
-                    console.log('Showing chat modal');
                     chatModal.style.display = 'block';
-                    
-                    // Ensure the modal is visible and on top
-                    chatModal.style.zIndex = '10000';
-                    chatModal.style.opacity = '1';
-                    chatModal.style.visibility = 'visible';
+                    // Setup typing events for the chat
+                    setupChatTypingEvents();
                 } else {
                     console.error('Chat modal not found');
                     throw new Error('Chat modal not found');
@@ -1670,13 +1964,15 @@
                 console.error('Error loading messages:', error);
                 alert(error.message || 'Failed to load messages');
             }
+            
+            // Update last sent message status after loading all messages
+            updateLastSentMessageStatus();
         }
 
         // Function to append message to chat
         async function appendMessage(message) {
             const chatMessages = document.getElementById('messages');
             if (chatMessages) {
-                const messageElement = document.createElement('div');
                 const adminId = localStorage.getItem('adminId');
                 const clientId = localStorage.getItem('clientId');
                 
@@ -1701,13 +1997,22 @@
                     userId: userId
                 });
                 
+                // Create message element
+                const messageElement = document.createElement('div');
                 messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
+                messageElement.setAttribute('data-message-id', message._id || `temp-${Date.now()}`);
                 
                 // Get username for the message sender
                 let senderName = 'You';
                 if (!isSent) {
                     // Fetch username from backend for other users
+                    console.log('Fetching username for received message:', {
+                        senderId: message.sender,
+                        senderModel: message.senderModel,
+                        isSent: isSent
+                    });
                     senderName = await getUsernameById(message.sender, message.senderModel);
+                    console.log('Resolved sender name:', senderName);
                 }
                 
                 // Check if this is a location message
@@ -1721,12 +2026,18 @@
                         }
                         
                         if (locationData.type === 'location') {
+                            // Add sender name outside the message content
+                            const senderNameElement = document.createElement('div');
+                            senderNameElement.className = 'message-sender';
+                            senderNameElement.textContent = senderName || "Unknown User";
+                            messageElement.appendChild(senderNameElement);
+                            
                             const locationDiv = document.createElement('div');
                             locationDiv.className = 'location-message';
                             
                             locationDiv.innerHTML = `
                                 <div class="location-title">
-                                    <i class="fas fa-map-marker-alt"></i> Location Shared by ${senderName}
+                                    <i class="fas fa-map-marker-alt"></i> Location Shared
                                 </div>
                                 <div class="location-coords">
                                     ${locationData.latitude.toFixed(6)}, ${locationData.longitude.toFixed(6)}
@@ -1741,6 +2052,21 @@
                             `;
                             
                             messageElement.appendChild(locationDiv);
+                            
+                            // Add read receipt for sent location messages
+                            if (isSent) {
+                                const statusElement = document.createElement('div');
+                                statusElement.className = 'message-status';
+                                
+                                // Use the computed status from the backend
+                                const status = message.status || 'sent';
+                                console.log('Using computed status for location message:', status, 'for message:', message._id);
+                                
+                                const receipt = createReadReceipt(status);
+                                statusElement.appendChild(receipt);
+                                
+                                messageElement.appendChild(statusElement);
+                            }
                         } else {
                             // Fallback to regular message
                             const content = document.createElement('div');
@@ -1783,7 +2109,48 @@
                         }
                         
                         if (imageData.type === 'image') {
-                            showImageMessage(imageData, isSent, senderName);
+                            // Add sender name outside the message content
+                            const senderNameElement = document.createElement('div');
+                            senderNameElement.className = 'message-sender';
+                            senderNameElement.textContent = senderName || "Unknown User";
+                            messageElement.appendChild(senderNameElement);
+                            
+                            // Create image message element with read receipt
+                            const imageDiv = document.createElement('div');
+                            imageDiv.className = 'image-message';
+                            
+                            // Format file size
+                            const fileSizeKB = Math.round(imageData.fileSize / 1024);
+                            const fileSizeText = fileSizeKB > 1024 ? 
+                                `${(fileSizeKB / 1024).toFixed(1)} MB` : 
+                                `${fileSizeKB} KB`;
+                            
+                            imageDiv.innerHTML = `
+                                <div class="image-title">
+                                    <i class="fas fa-image"></i> Image shared
+                                </div>
+                                <img src="${imageData.imageData}" alt="Shared image" class="chat-image" onclick="showFullImage('${imageData.imageData}', '${imageData.fileName}')">
+                                <div class="image-info">
+                                    ${imageData.fileName} (${fileSizeText})
+                                </div>
+                            `;
+                            
+                            messageElement.appendChild(imageDiv);
+                            
+                            // Add read receipt for sent image messages
+                            if (isSent) {
+                                const statusElement = document.createElement('div');
+                                statusElement.className = 'message-status';
+                                
+                                // Use the computed status from the backend
+                                const status = message.status || 'sent';
+                                console.log('Using computed status for image message:', status, 'for message:', message._id);
+                                
+                                const receipt = createReadReceipt(status);
+                                statusElement.appendChild(receipt);
+                                
+                                messageElement.appendChild(statusElement);
+                            }
                         } else {
                             // Fallback to regular message
                             const content = document.createElement('div');
@@ -1820,15 +2187,18 @@
                     const content = document.createElement('div');
                     content.className = 'message-content';
                     
-                    // Add sender name for received messages
-                    // Add sender name for received messages
-// Always add sender name
+                    // Add sender name outside the message content
 const senderNameElement = document.createElement('div');
 senderNameElement.className = 'message-sender';
-senderNameElement.style.cssText = 'font-weight: bold; font-size: 12px; color: #666; margin-bottom: 4px;';
-senderNameElement.textContent = senderName || "You";
-content.appendChild(senderNameElement);
-
+                    senderNameElement.textContent = senderName || "Unknown User";
+                    messageElement.appendChild(senderNameElement);
+                    
+                    console.log('Adding sender name for message:', {
+                        senderName: senderName,
+                        isSent: isSent,
+                        messageSender: message.sender,
+                        currentUserId: userId
+                    });
                     
                     const messageText = document.createElement('p');
                     messageText.textContent = message.content;
@@ -1838,24 +2208,57 @@ content.appendChild(senderNameElement);
                     timestamp.textContent = new Date(message.timestamp).toLocaleString();
                     content.appendChild(timestamp);
 
+                    // Add read receipt for sent messages
+                    if (isSent) {
+                        const statusElement = document.createElement('div');
+                        statusElement.className = 'message-status';
+                        
+                        // Use the computed status from the backend
+                        const status = message.status || 'sent';
+                        console.log('Using computed status:', status, 'for message:', message._id);
+                        
+                        const receipt = createReadReceipt(status);
+                        statusElement.appendChild(receipt);
+                        
+                        content.appendChild(statusElement);
+                    }
+
                     messageElement.appendChild(content);
                 }
                 
                 chatMessages.appendChild(messageElement);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Add click-to-toggle timestamp functionality
+                const messageContent = messageElement.querySelector('.message-content');
+                if (messageContent) {
+                    messageContent.classList.remove('show-time');
+                    messageElement.addEventListener('click', function(e) {
+                        // Prevent toggling if clicking on buttons/inputs inside the message
+                        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.classList.contains('read-receipt')) return;
+                        messageContent.classList.toggle('show-time');
+                    });
+                }
+                
+                // Update last sent message status
+                updateLastSentMessageStatus();
             }
         }
 
         // Function to get username by user ID
         async function getUsernameById(userId, userType) {
             try {
+                console.log('getUsernameById called with:', { userId, userType });
+                
                 // Try to get from localStorage first for current user
                 const adminId = localStorage.getItem('adminId');
                 const clientId = localStorage.getItem('clientId');
                 
                 // Use string comparison for user IDs
                 if (String(userId) === String(adminId) || String(userId) === String(clientId)) {
-                    return localStorage.getItem('username') || 'You';
+                    const username = localStorage.getItem('username') || 'You';
+                    console.log('Found current user in localStorage:', username);
+                    return username;
                 }
                 
                 // Try to get from admin clients array if current user is admin
@@ -1863,32 +2266,64 @@ content.appendChild(senderNameElement);
                     const adminClients = JSON.parse(localStorage.getItem('clients') || '[]');
                     const client = adminClients.find(c => String(c.clientId) === String(userId));
                     if (client) {
+                        console.log('Found client in admin clients array:', client.username);
                         return client.username || 'Unknown User';
                     }
                 }
                 
-                // Fetch from backend
+                // Fetch from backend based on userType
                 let response;
+                let endpoint;
+                
                 if (userType === 'Admin' || userType === 'admin') {
-                    response = await fetch(`https://my-node-backend-fcdy.onrender.com/admins-profile/${userId}`, {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
-                    });
+                    endpoint = `https://my-node-backend-fcdy.onrender.com/admins-profile/${userId}`;
+                } else if (userType === 'Client' || userType === 'client') {
+                    endpoint = `https://my-node-backend-fcdy.onrender.com/clients-profile/${userId}`;
                 } else {
-                    response = await fetch(`https://my-node-backend-fcdy.onrender.com/clients-profile/${userId}`, {
+                    // If userType is not provided, try both endpoints
+                    console.log('UserType not provided, trying both endpoints');
+                    
+                    // Try admin first
+                    try {
+                        response = await fetch(`https://my-node-backend-fcdy.onrender.com/admins-profile/${userId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                        if (response.ok) {
+                            const data = await response.json();
+                            const user = data.admin || data.data;
+                            if (user && user.username) {
+                                console.log('Found admin user:', user.username);
+                                return user.username;
+                            }
+                        }
+                    } catch (error) {
+                        console.log('Admin endpoint failed, trying client endpoint');
+                    }
+                    
+                    // Try client endpoint
+                    endpoint = `https://my-node-backend-fcdy.onrender.com/clients-profile/${userId}`;
+                }
+                
+                if (endpoint) {
+                    response = await fetch(endpoint, {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         }
                     });
                 }
                 
-                if (response.ok) {
+                if (response && response.ok) {
                     const data = await response.json();
-                    const user = data.admin || data.client;
-                    return user ? (user.username || 'Unknown User') : 'Unknown User';
+                    const user = data.admin || data.client || data.data;
+                    if (user && user.username) {
+                        console.log('Found user from backend:', user.username);
+                        return user.username;
+                    }
                 }
                 
+                console.log('Could not find username for userId:', userId, 'userType:', userType);
                 return 'Unknown User';
             } catch (error) {
                 console.error('Error fetching username:', error);
@@ -2099,6 +2534,8 @@ content.appendChild(senderNameElement);
                 const chatModal = document.getElementById('chatModal');
                 if (chatModal) {
                     chatModal.style.display = 'block';
+                    // Setup typing events for the chat
+                    setupChatTypingEvents();
                 }
 
                 // Join the chat room
@@ -2192,6 +2629,27 @@ content.appendChild(senderNameElement);
             }
 
             try {
+                // Create a temporary message object for immediate display
+                const tempMessage = {
+                    _id: `temp-${Date.now()}-${Math.random()}`,
+                    sender: userId,
+                    senderModel: userType,
+                    content: message,
+                    timestamp: new Date(),
+                    readBy: [{ user: userId }]
+                };
+
+                // Immediately append the message to the chat
+                await appendMessage(tempMessage);
+
+                // Clear input
+                messageInput.value = '';
+
+                // Stop typing indicator when message is sent
+                isTyping = false;
+                emitTypingEvent(false);
+                clearTimeout(typingTimer);
+
                 // First emit the message to socket
                 if (socket) {
                     socket.emit('productChatMessage', {
@@ -2203,9 +2661,6 @@ content.appendChild(senderNameElement);
                         senderInfo: senderInfo
                     });
                 }
-
-                // Clear input
-                messageInput.value = '';
             } catch (error) {
                 console.error('Error sending message:', error);
                 alert(error.message || 'Failed to send message');
@@ -2366,6 +2821,22 @@ content.appendChild(senderNameElement);
             `;
             
             messageElement.appendChild(locationDiv);
+            
+            // Add read receipt for sent location messages
+            if (isOwnMessage) {
+                const statusElement = document.createElement('div');
+                statusElement.className = 'message-status';
+                
+                // For temporary messages, start with 'sent' status
+                const status = 'sent';
+                console.log('Using sent status for temporary location message');
+                
+                const receipt = createReadReceipt(status);
+                statusElement.appendChild(receipt);
+                
+                messageElement.appendChild(statusElement);
+            }
+            
             chatMessages.appendChild(messageElement);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
@@ -2542,7 +3013,7 @@ content.appendChild(senderNameElement);
                     
                     // Only append if it's not our own message (our own messages are already shown)
                     if (data.message.sender !== currentUserId) {
-                        await appendMessage(data.message);
+                    await appendMessage(data.message);
                     }
                 }
             });
@@ -2634,7 +3105,7 @@ content.appendChild(senderNameElement);
                             } else if (message.sender === clientId) {
                                 senderType = 'Client';
                             } else {
-                                senderType = 'User';
+                                senderType = 'Client';
                             }
                         }
                         
@@ -2695,6 +3166,52 @@ content.appendChild(senderNameElement);
                 alert(error);
             });
 
+            // Handle message delivered events
+            socket.on('messageDelivered', (data) => {
+                console.log('Message delivered:', data);
+                updateMessageStatus(data.messageId, 'delivered');
+            });
+
+            // Handle messages read events
+            socket.on('messages:read', (data) => {
+                console.log('Messages read event received:', data);
+                updateMessagesToRead(data.chatId, data.readBy);
+            });
+
+            // Handle typing events
+            socket.on('userTyping', (data) => {
+                console.log('User typing event received:', data);
+                const currentChatId = localStorage.getItem('currentChatId');
+                const adminId = localStorage.getItem('adminId');
+                const clientId = localStorage.getItem('clientId');
+                const currentUserId = (adminId && adminId !== 'null' && adminId !== null) ? adminId : 
+                                    (clientId && clientId !== 'null' && clientId !== null) ? clientId : null;
+                
+                // Only show typing indicator if it's from another user in the current chat
+                if (data.chatId === currentChatId && data.userId !== currentUserId) {
+                    if (data.isTyping) {
+                        showTypingIndicator();
+                    } else {
+                        hideTypingIndicator();
+                    }
+                }
+            });
+
+            // Handle typing stopped events
+            socket.on('userStoppedTyping', (data) => {
+                console.log('User stopped typing event received:', data);
+                const currentChatId = localStorage.getItem('currentChatId');
+                const adminId = localStorage.getItem('adminId');
+                const clientId = localStorage.getItem('clientId');
+                const currentUserId = (adminId && adminId !== 'null' && adminId !== null) ? adminId : 
+                                    (clientId && clientId !== 'null' && clientId !== null) ? clientId : null;
+                
+                // Only hide typing indicator if it's from another user in the current chat
+                if (data.chatId === currentChatId && data.userId !== currentUserId) {
+                    hideTypingIndicator();
+                }
+            });
+
             // Initialize UI elements
             const productsGrid = document.getElementById('productsGrid');
             const addProductModal = document.getElementById('addProductModal');
@@ -2707,6 +3224,14 @@ content.appendChild(senderNameElement);
             if (chatCloseButton) {
                 chatCloseButton.addEventListener('click', () => {
                     chatModal.style.display = 'none';
+
+                    // Hide typing indicator when chat is closed
+                    hideTypingIndicator();
+                    
+                    // Stop typing events
+                    isTyping = false;
+                    emitTypingEvent(false);
+                    clearTimeout(typingTimer);
 
                     // Get currentProductId BEFORE clearing
                     const currentProductId = localStorage.getItem('currentProductId');
@@ -2990,7 +3515,7 @@ content.appendChild(senderNameElement);
                             addNotificationToDropdown({
                                 content: `You have ${info.count} unread message(s)`,
                                 timestamp: new Date()
-                            }, productId, info.title, null, null, 'User');
+                            }, productId, info.title, null, null, 'Client');
                         }
                     }
                 }
@@ -3061,7 +3586,7 @@ content.appendChild(senderNameElement);
             
             // Fallback to 'User' if still no sender type
             if (!finalSenderType) {
-                finalSenderType = 'User';
+                finalSenderType = 'Client';
             }
             
             // Only show profile button if we have sender information
@@ -3275,7 +3800,7 @@ content.appendChild(senderNameElement);
                     
                     // Try to fetch as admin first
                     try {
-                        const adminResponse = await fetch(`https://my-node-backend-fcdy.onrender.com/admins-profile/${userId}`, {
+                        const adminResponse = await fetch(`https://my-node-backend-fcdy.onrender.com/admins/${userId}`, {
                             headers: {
                                 'Authorization': `Bearer ${localStorage.getItem('token')}`
                             }
@@ -3457,7 +3982,7 @@ content.appendChild(senderNameElement);
             const currentUserId = (adminId && adminId !== 'null' && adminId !== null) ? adminId : 
                                 (clientId && clientId !== 'null' && clientId !== null) ? clientId : null;
             
-            const isSeller = currentUserId === product.seller._id || currentUserId === product.seller;
+            const isSeller = product.seller && (currentUserId === product.seller._id || currentUserId === product.seller);
             const viewProfileButton = document.getElementById('viewProfileButton');
             
             if (isSeller) {
@@ -3634,6 +4159,22 @@ content.appendChild(senderNameElement);
             `;
             
             messageElement.appendChild(imageDiv);
+            
+            // Add read receipt for sent image messages
+            if (isOwnMessage) {
+                const statusElement = document.createElement('div');
+                statusElement.className = 'message-status';
+                
+                // For temporary messages, start with 'sent' status
+                const status = 'sent';
+                console.log('Using sent status for temporary image message');
+                
+                const receipt = createReadReceipt(status);
+                statusElement.appendChild(receipt);
+                
+                messageElement.appendChild(statusElement);
+            }
+            
             chatMessages.appendChild(messageElement);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
@@ -3670,6 +4211,196 @@ content.appendChild(senderNameElement);
                     document.removeEventListener('keydown', closeOnEscape);
                 }
             });
+        }
+
+        // Function to update message status (sent, delivered, read)
+        function updateMessageStatus(messageId, status) {
+            const messageElements = document.querySelectorAll(`[data-message-id="${messageId}"]`);
+            messageElements.forEach(element => {
+                const statusElement = element.querySelector('.message-status');
+                if (statusElement) {
+                    const dot = statusElement.querySelector('.status-dot');
+                    const text = statusElement.querySelector('.status-text');
+                    
+                    if (dot) {
+                        dot.className = `status-dot ${status}`;
+                    }
+                    
+                    if (text) {
+                        text.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+                    }
+                }
+            });
+        }
+
+        // Function to update all messages to read status
+        function updateMessagesToRead(chatId, readBy) {
+            const currentChatId = localStorage.getItem('currentChatId');
+            console.log('Updating messages to read:', { chatId, currentChatId, readBy });
+            
+            if (currentChatId === chatId) {
+                const messageElements = document.querySelectorAll('.message.sent');
+                console.log(`Found ${messageElements.length} sent messages to update`);
+                
+                messageElements.forEach(element => {
+                    const statusElement = element.querySelector('.message-status');
+                    if (statusElement) {
+                        const receipt = statusElement.querySelector('.read-receipt');
+                        if (receipt) {
+                            receipt.className = 'read-receipt read';
+                            const icon = receipt.querySelector('i');
+                            const text = receipt.querySelector('.status-text');
+                            
+                            if (icon) {
+                                icon.className = 'fas fa-check-double';
+                            }
+                            if (text) {
+                                text.textContent = 'Read';
+                            }
+                        }
+                    } else {
+                        // If no status element exists, create one
+                        const content = element.querySelector('.message-content');
+                        if (content) {
+                            const statusElement = document.createElement('div');
+                            statusElement.className = 'message-status';
+                            const receipt = createReadReceipt('read');
+                            statusElement.appendChild(receipt);
+                            content.appendChild(statusElement);
+                        }
+                    }
+                });
+            }
+        }
+
+        // Function to create read receipt element
+        function createReadReceipt(status = 'sent') {
+            const receipt = document.createElement('div');
+            receipt.className = `read-receipt ${status}`;
+            
+            let icon, text;
+            switch (status) {
+                case 'sent':
+                    icon = 'fas fa-circle';
+                    text = 'Sent';
+                    break;
+                case 'delivered':
+                    icon = 'fas fa-check';
+                    text = 'Delivered';
+                    break;
+                case 'read':
+                    icon = 'fas fa-check-double';
+                    text = 'Read';
+                    break;
+                default:
+                    icon = 'fas fa-circle';
+                    text = 'Sent';
+            }
+            
+            receipt.innerHTML = `
+                <i class="${icon}"></i>
+                <span class="status-text">${text}</span>
+            `;
+            
+            return receipt;
+        }
+
+        // Typing indicator functionality
+        let typingTimer;
+        let isTyping = false;
+
+        // Function to show typing indicator
+        function showTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.classList.add('show');
+            }
+        }
+
+        // Function to hide typing indicator
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.classList.remove('show');
+            }
+        }
+
+        // Function to emit typing event
+        function emitTypingEvent(isTyping) {
+            const chatId = localStorage.getItem('currentChatId');
+            const productId = localStorage.getItem('currentProductId');
+            const adminId = localStorage.getItem('adminId');
+            const clientId = localStorage.getItem('clientId');
+            const userId = (adminId && adminId !== 'null' && adminId !== null) ? adminId : 
+                          (clientId && clientId !== 'null' && clientId !== null) ? clientId : null;
+            const userType = (adminId && adminId !== 'null' && adminId !== null) ? 'Admin' : 'Client';
+
+            if (socket && chatId && userId) {
+                socket.emit('typing', {
+                    chatId: chatId,
+                    productId: productId,
+                    userId: userId,
+                    userType: userType,
+                    isTyping: isTyping
+                });
+            }
+        }
+
+        // Function to handle typing events
+        function handleTyping() {
+            if (!isTyping) {
+                isTyping = true;
+                emitTypingEvent(true);
+            }
+
+            // Clear existing timer
+            clearTimeout(typingTimer);
+
+            // Set new timer to stop typing after 2 seconds of inactivity
+            typingTimer = setTimeout(() => {
+                isTyping = false;
+                emitTypingEvent(false);
+            }, 2000);
+        }
+
+        // Add typing event listeners to message input
+        function setupTypingEvents() {
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                // Remove existing listeners to prevent duplicates
+                messageInput.removeEventListener('input', handleTyping);
+                messageInput.removeEventListener('keydown', handleTyping);
+                messageInput.removeEventListener('keyup', handleTyping);
+                
+                // Add new listeners
+                messageInput.addEventListener('input', handleTyping);
+                messageInput.addEventListener('keydown', handleTyping);
+                messageInput.addEventListener('keyup', handleTyping);
+            }
+        }
+
+        // Initialize typing events when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setupTypingEvents();
+        });
+
+        // Also setup typing events when chat modal is opened
+        function setupChatTypingEvents() {
+            setTimeout(() => {
+                setupTypingEvents();
+            }, 100); // Small delay to ensure modal is fully rendered
+        }
+
+        // Utility to update last sent message status
+        function updateLastSentMessageStatus() {
+            // Remove 'last-sent' from all sent messages
+            document.querySelectorAll('.message.sent.last-sent').forEach(el => el.classList.remove('last-sent'));
+            // Find all sent messages
+            const sentMessages = document.querySelectorAll('.message.sent');
+            if (sentMessages.length > 0) {
+                // Add 'last-sent' to the last one
+                sentMessages[sentMessages.length - 1].classList.add('last-sent');
+            }
         }
     </script>
 </body>
