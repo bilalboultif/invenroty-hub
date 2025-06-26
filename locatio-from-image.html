@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Family Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href='https://fonts.googleapis.com/css?family=Libre Barcode 128' rel='stylesheet'>
+    <script src="https://js.stripe.com/v3/"></script> <!-- Stripe.js for payment with card -->
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID"></script> <!-- PayPal SDK -->
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="navbar.js" defer></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  /* For hiding file input */
+  .sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0,0,0,0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+  /* For line clamp on history descriptions */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  #backgroundMap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: auto;
+  }
+  body > nav, body > header, main, aside, section, #previewSection, #analysisResult, #uploadArea, #analyzeBtn, #errorMsg {
+    position: relative;
+    z-index: 1;
+  }
+  #mapModeToggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    background: rgba(255,255,255,0.85);
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: background 0.2s;
+  }
+  #mapModeToggle.dark {
+    background: rgba(30,30,30,0.85);
+    color: #fff;
+  }
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+<button id="mapModeToggle" title="Toggle map dark/light mode">🌙 Dark Mode</button>
+<div id="backgroundMap"></div>
+ <nav>
+        <div class="nav-container">
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            <ul>
+                <li><a href="admin-dashboard.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                                <li><a href="locatio-from-image.html">Location From Image</a></li>
+
+            </ul>
+        </div>
+      </nav>
+    <button id="logoutButton" onclick="logout()"">
+        <i class="fas fa-sign-out-alt"></i> <!-- Font Awesome logout icon -->
+      </button>
+      <button id="refreshButton" class="refresh-icon">
+        <i class="fas fa-sync-alt"></i> <!-- Font Awesome refresh icon -->
+      </button>
+
+<header style="margin-top: 50px;" class="bg-white shadow-sm border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">LocationLens</h1>
+        <p class="text-sm text-gray-500">Discover locations from your images</p>
+      </div>
+    </div>
+    <button id="toggleHistoryBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      History
+    </button>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+  <!-- Upload Section -->
+  <section class="lg:col-span-2">
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <h2 class="text-xl font-semibold text-gray-900 mb-6">Upload Image for Location Analysis</h2>
+
+      <div id="uploadArea" class="relative border-2 border-dashed rounded-xl p-12 text-center transition-colors border-gray-300 hover:border-gray-400 cursor-pointer">
+        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="mt-4">
+          <label for="fileUploadInput" class="cursor-pointer">
+            <span class="mt-2 block text-sm font-medium text-gray-900">
+              Drop an image here, or <span class="text-indigo-600">browse</span>
+            </span>
+            <input id="fileUploadInput" name="file-upload" type="file" accept="image/*" class="sr-only" />
+          </label>
+          <p class="mt-2 text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+        </div>
+      </div>
+
+      <div id="previewSection" class="hidden space-y-6 mt-6">
+
+        <div class="relative">
+          <img id="imagePreview" src="" alt="Selected" class="w-full h-64 object-cover rounded-lg shadow-md" />
+          <button id="resetBtn" class="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" title="Remove image">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <button id="analyzeBtn" class="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg id="analyzeSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span id="analyzeBtnText">Analyze Location</span>
+        </button>
+
+        <div id="errorMsg" class="rounded-md bg-red-50 p-4 hidden">
+          <div class="flex">
+            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+            <div class="ml-3">
+              <p class="text-sm text-red-800" id="errorText"></p>
+            </div>
+          </div>
+        </div>
+
+        <div id="analysisResult" class="bg-green-50 rounded-lg p-6 space-y-4 hidden">
+          <div class="flex items-center">
+            <svg class="h-6 w-6 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="text-lg font-medium text-green-900">Location Analysis Complete</h3>
+          </div>
+          <div class="bg-white rounded-lg p-4 space-y-3">
+            <div>
+              <h4 class="font-medium text-gray-900">Location:</h4>
+              <p class="text-gray-700 mt-1" id="resultLocation"></p>
+            </div>
+            <div id="resultLandmarksContainer" class="hidden">
+              <h4 class="font-medium text-gray-900">Landmarks:</h4>
+              <ul class="list-disc list-inside text-gray-700 mt-1" id="resultLandmarks"></ul>
+            </div>
+            <div id="resultCoordinatesContainer" class="hidden">
+              <h4 class="font-medium text-gray-900">Coordinates:</h4>
+              <p class="text-gray-700 mt-1" id="resultCoordinates"></p>
+            </div>
+            <div id="resultConfidenceContainer" class="hidden">
+              <h4 class="font-medium text-gray-900">Confidence:</h4>
+              <span id="resultConfidence" class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- History Sidebar -->
+  <aside id="historySidebar" class="hidden lg:block">
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Analyses</h3>
+      <p id="noHistoryMsg" class="text-gray-500 text-sm">No analyses yet. Upload an image to get started!</p>
+      <div id="historyList" class="space-y-4 max-h-96 overflow-y-auto"></div>
+    </div>
+  </aside>
+
+</main>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  // Replace this with your backend URL
+  const BACKEND_URL = 'http://localhost:5000'; // e.g. 'http://localhost:8000'
+  const API = BACKEND_URL + '/api';
+
+  // State variables
+  let dragActive = false;
+  let selectedImage = null;  // { file, name, preview, base64 }
+  let analyzing = false;
+  let analysisResult = null;
+  let history = [];
+  let showHistory = false;
+  let map, marker, currentTileLayer, isDarkMode = false;
+  const lightTileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const darkTileUrl = 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png';
+
+  // DOM references
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('fileUploadInput');
+  const previewSection = document.getElementById('previewSection');
+  const imagePreview = document.getElementById('imagePreview');
+  const resetBtn = document.getElementById('resetBtn');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const analyzeSpinner = document.getElementById('analyzeSpinner');
+  const analyzeBtnText = document.getElementById('analyzeBtnText');
+  const errorMsg = document.getElementById('errorMsg');
+  const errorText = document.getElementById('errorText');
+  const analysisResultDiv = document.getElementById('analysisResult');
+  const resultLocation = document.getElementById('resultLocation');
+  const resultLandmarksContainer = document.getElementById('resultLandmarksContainer');
+  const resultLandmarks = document.getElementById('resultLandmarks');
+  const resultCoordinatesContainer = document.getElementById('resultCoordinatesContainer');
+  const resultCoordinates = document.getElementById('resultCoordinates');
+  const resultConfidenceContainer = document.getElementById('resultConfidenceContainer');
+  const resultConfidence = document.getElementById('resultConfidence');
+  const historySidebar = document.getElementById('historySidebar');
+  const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+  const historyList = document.getElementById('historyList');
+  const noHistoryMsg = document.getElementById('noHistoryMsg');
+
+  // --- Functions ---
+
+  async function loadHistory() {
+    try {
+      const res = await fetch(API + '/history');
+      if (!res.ok) throw new Error('Failed to load history');
+      history = await res.json();
+      renderHistory();
+    } catch (err) {
+      console.error('Failed to load history:', err);
+    }
+  }
+
+  function renderHistory() {
+    if (history.length === 0) {
+      noHistoryMsg.style.display = 'block';
+      historyList.innerHTML = '';
+    } else {
+      noHistoryMsg.style.display = 'none';
+      historyList.innerHTML = '';
+      history.forEach((analysis) => {
+        const div = document.createElement('div');
+        div.className = 'border rounded-lg p-3 hover:bg-gray-50 flex items-start justify-between';
+        div.innerHTML = `
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">${escapeHtml(analysis.image_name)}</p>
+            <p class="text-xs text-gray-500 mt-1">${new Date(analysis.timestamp).toLocaleDateString()}</p>
+            <p class="text-xs text-gray-700 mt-1 line-clamp-2">${escapeHtml(analysis.location_result)}</p>
+          </div>
+          <button class="ml-2 p-1 text-gray-400 hover:text-red-500 focus:outline-none" title="Delete analysis" aria-label="Delete analysis">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3m5 0H6" />
+            </svg>
+          </button>
+        `;
+        const deleteBtn = div.querySelector('button');
+        deleteBtn.onclick = () => deleteHistoryItem(analysis.id);
+        div.onclick = (e) => {
+          // Avoid clicking delete triggers select
+          if (e.target === deleteBtn || deleteBtn.contains(e.target)) return;
+          loadHistoryItem(analysis.id);
+        };
+        historyList.appendChild(div);
+      });
+    }
+  }
+
+  async function deleteHistoryItem(id) {
+    if (!confirm('Delete this analysis?')) return;
+    try {
+      const res = await fetch(API + '/history/' + encodeURIComponent(id), { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+      // Remove from local history array
+      history = history.filter(item => item.id !== id);
+      renderHistory();
+    } catch (err) {
+      alert('Failed to delete analysis');
+    }
+  }
+
+  async function loadHistoryItem(id) {
+    try {
+      const res = await fetch(API + '/history/' + encodeURIComponent(id));
+      if (!res.ok) throw new Error('Failed to load analysis');
+      const analysis = await res.json();
+      displayAnalysis(analysis);
+      scrollToTop();
+    } catch (err) {
+      alert('Failed to load analysis');
+    }
+  }
+
+  function displayAnalysis(data) {
+    analysisResultDiv.classList.remove('hidden');
+    resultLocation.textContent = data.location_result || 'Unknown location';
+    if (data.landmarks && data.landmarks.length > 0) {
+      resultLandmarksContainer.classList.remove('hidden');
+      resultLandmarks.innerHTML = '';
+      data.landmarks.forEach(lm => {
+        const li = document.createElement('li');
+        li.textContent = lm;
+        resultLandmarks.appendChild(li);
+      });
+    } else {
+      resultLandmarksContainer.classList.add('hidden');
+    }
+    if (data.coordinates) {
+      resultCoordinatesContainer.classList.remove('hidden');
+      resultCoordinates.textContent = `${data.coordinates.latitude.toFixed(5)}, ${data.coordinates.longitude.toFixed(5)}`;
+      showLocationOnMap(data.coordinates.latitude, data.coordinates.longitude);
+    } else {
+      resultCoordinatesContainer.classList.add('hidden');
+    }
+    if (typeof data.confidence === 'number') {
+      resultConfidenceContainer.classList.remove('hidden');
+      resultConfidence.textContent = `${(data.confidence * 100).toFixed(1)}%`;
+      if (data.confidence > 0.8) {
+        resultConfidence.className = 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800';
+      } else if (data.confidence > 0.5) {
+        resultConfidence.className = 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800';
+      } else {
+        resultConfidence.className = 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800';
+      }
+    } else {
+      resultConfidenceContainer.classList.add('hidden');
+    }
+  }
+
+  // Utility: escape HTML to avoid injection
+  function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, function (m) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+    });
+  }
+
+  // Show error message
+  function showError(message) {
+    errorText.textContent = message;
+    errorMsg.classList.remove('hidden');
+  }
+  // Hide error
+  function hideError() {
+    errorMsg.classList.add('hidden');
+    errorText.textContent = '';
+  }
+
+  // Scroll top helper
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Handle file selection (file input or drag drop)
+  async function handleFile(file) {
+    hideError();
+    if (!file.type.startsWith('image/')) {
+      showError('Please select a valid image file.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) { // 10MB
+      showError('File size exceeds 10MB limit.');
+      return;
+    }
+    // Read file as DataURL for preview and upload
+    const reader = new FileReader();
+    reader.onload = () => {
+      selectedImage = {
+        file,
+        name: file.name,
+        preview: reader.result,
+      };
+      imagePreview.src = selectedImage.preview;
+      previewSection.classList.remove('hidden');
+      analysisResultDiv.classList.add('hidden');
+      selectedImage.base64 = selectedImage.preview.split(',')[1]; // base64 string after data:image/...
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Reset upload
+  function resetUpload() {
+    selectedImage = null;
+    previewSection.classList.add('hidden');
+    imagePreview.src = '';
+    hideError();
+    analysisResultDiv.classList.add('hidden');
+  }
+
+  // Analyze button click
+  async function analyzeImage() {
+    if (!selectedImage || analyzing) return;
+    hideError();
+    analyzing = true;
+    analyzeBtn.disabled = true;
+    analyzeSpinner.classList.remove('hidden');
+    analyzeBtnText.textContent = 'Analyzing...';
+
+    try {
+      // Post base64 image to backend
+      const res = await fetch(API + '/analyze-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+  image_name: selectedImage.name,
+  image_base64: selectedImage.preview // OR: selectedImage.base64 with backend fix below
+}),
+      });
+      if (!res.ok) {
+        let errorMsg = 'Failed to analyze image.';
+        try {
+          const errData = await res.json();
+          if (errData.error) errorMsg = errData.error;
+        } catch {}
+        throw new Error(errorMsg);
+      }
+      const data = await res.json();
+      analysisResult = data;
+      displayAnalysis(data);
+
+      // Reload history
+      await loadHistory();
+
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      analyzing = false;
+      analyzeBtn.disabled = false;
+      analyzeSpinner.classList.add('hidden');
+      analyzeBtnText.textContent = 'Analyze Location';
+    }
+  }
+
+  // Drag & Drop handlers
+  uploadArea.addEventListener('dragover', e => {
+    e.preventDefault();
+    if (!dragActive) {
+      dragActive = true;
+      uploadArea.classList.add('border-indigo-600');
+    }
+  });
+  uploadArea.addEventListener('dragleave', e => {
+    e.preventDefault();
+    dragActive = false;
+    uploadArea.classList.remove('border-indigo-600');
+  });
+  uploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    dragActive = false;
+    uploadArea.classList.remove('border-indigo-600');
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFile(e.dataTransfer.files[0]);
+      e.dataTransfer.clearData();
+    }
+  });
+
+  // File input change
+  fileInput.addEventListener('change', e => {
+    if (fileInput.files && fileInput.files.length > 0) {
+      handleFile(fileInput.files[0]);
+    }
+  });
+
+  resetBtn.addEventListener('click', resetUpload);
+  analyzeBtn.addEventListener('click', analyzeImage);
+
+  // Toggle history sidebar on smaller screens
+  toggleHistoryBtn.addEventListener('click', () => {
+    showHistory = !showHistory;
+    if (showHistory) {
+      historySidebar.classList.remove('hidden');
+      loadHistory();
+    } else {
+      historySidebar.classList.add('hidden');
+    }
+  });
+
+  // On load
+  window.addEventListener('load', () => {
+    loadHistory();
+    map = L.map('backgroundMap', {
+      zoomControl: true,
+      attributionControl: false,
+      dragging: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      boxZoom: true,
+      keyboard: true,
+      tap: true,
+      touchZoom: true,
+    }).setView([20, 0], 2);
+    setMapTileLayer(isDarkMode);
+    map._container.style.pointerEvents = 'auto';
+
+    // Prevent page scroll/zoom when interacting with the map
+    map._container.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+    map._container.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+    map._container.addEventListener('mousedown', function(e) {
+      e.stopPropagation();
+    });
+
+    // Map mode toggle
+    const mapModeToggle = document.getElementById('mapModeToggle');
+    mapModeToggle.addEventListener('click', () => {
+      isDarkMode = !isDarkMode;
+      setMapTileLayer(isDarkMode);
+      mapModeToggle.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+      mapModeToggle.classList.toggle('dark', isDarkMode);
+    });
+  });
+
+  function showLocationOnMap(lat, lon) {
+    if (!map) return;
+    map.setView([lat, lon], 13);
+    if (marker) {
+      marker.setLatLng([lat, lon]);
+    } else {
+      marker = L.marker([lat, lon]).addTo(map);
+    }
+    // Ensure map remains interactive
+    map._container.style.pointerEvents = 'auto';
+  }
+
+  function setMapTileLayer(dark) {
+    if (currentTileLayer) {
+      map.removeLayer(currentTileLayer);
+    }
+    currentTileLayer = L.tileLayer(dark ? darkTileUrl : lightTileUrl, {
+      maxZoom: 19,
+      attribution: ''
+    }).addTo(map);
+    // Adjust map filter for dark/light mode
+    if (map && map._container) {
+      if (dark) {
+        map._container.style.filter = '';
+      } else {
+        map._container.style.filter = 'blur(0px) brightness(0.95)';
+      }
+    }
+  }
+</script>
+</body>
+</html>

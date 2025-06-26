@@ -1314,9 +1314,96 @@
         .action-button i {
             font-size: 16px;
         }
+
+        /* Loading System */
+        .loader {
+            width: 50px;
+            padding: 8px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: #25b09b;
+            --_m: 
+                conic-gradient(#0000 10%,#000),
+                linear-gradient(#000 0 0) content-box;
+            -webkit-mask: var(--_m);
+                    mask: var(--_m);
+            -webkit-mask-composite: source-out;
+                    mask-composite: subtract;
+            animation: l3 1s infinite linear;
+        }
+        @keyframes l3 {to{transform: rotate(1turn)}}
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .section-loader {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            min-height: 200px;
+        }
+
+        .products-grid.loading {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .products-grid.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            padding: 8px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: #25b09b;
+            --_m: 
+                conic-gradient(#0000 10%,#000),
+                linear-gradient(#000 0 0) content-box;
+            -webkit-mask: var(--_m);
+                    mask: var(--_m);
+            -webkit-mask-composite: source-out;
+                    mask-composite: subtract;
+            animation: l3 1s infinite linear;
+        }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-container">
+            <div class="loader"></div>
+            <div class="loading-text" id="loadingText">Loading...</div>
+        </div>
+    </div>
+
     <!-- Navbar -->
     <nav>
         <div class="nav-container">
@@ -1561,6 +1648,53 @@
         let unreadMessages = new Map();
         let totalUnreadCount = 0;
 
+        // Loading utility functions
+        function showLoading(text = 'Loading...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            loadingText.textContent = text;
+            overlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'none';
+        }
+
+        function showSectionLoading(elementId, text = 'Loading...') {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.classList.add('loading');
+                element.innerHTML = `
+                    <div class="section-loader">
+                        <div class="loading-container">
+                            <div class="loader"></div>
+                            <div class="loading-text">${text}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function hideSectionLoading(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.classList.remove('loading');
+            }
+        }
+
+        // Enhanced fetch wrapper with loading
+        async function fetchWithLoading(url, options = {}, loadingText = 'Loading...') {
+            showLoading(loadingText);
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                return { response, data };
+            } finally {
+                hideLoading();
+            }
+        }
+
         function clearProcessedMessages() {
             processedMessageIds.clear();
         }
@@ -1689,6 +1823,7 @@
         // Function to show chat list for sellers
         async function showChatList(productId) {
             try {
+                showLoading('Loading chats...');
                 const response = await fetch(`https://my-node-backend-fcdy.onrender.com/api/products/${productId}/chats`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1793,6 +1928,8 @@
             } catch (error) {
                 console.error('Error fetching chats:', error);
                 alert('Failed to fetch chats');
+            } finally {
+                hideLoading();
             }
         }
 
@@ -1924,6 +2061,7 @@
             }
 
             try {
+                showLoading('Loading messages...');
                 console.log('Loading messages for chat:', chatId);
                 const response = await fetch(`https://my-node-backend-fcdy.onrender.com/api/products/chat/${chatId}/messages`, {
                     headers: {
@@ -1963,6 +2101,8 @@
             } catch (error) {
                 console.error('Error loading messages:', error);
                 alert(error.message || 'Failed to load messages');
+            } finally {
+                hideLoading();
             }
             
             // Update last sent message status after loading all messages
@@ -2489,6 +2629,7 @@ senderNameElement.className = 'message-sender';
         // Modify the startChat function to handle notifications
         async function startChat(productId) {
             try {
+                showLoading('Starting chat...');
                 console.log('Starting chat for product:', productId);
                 const response = await fetch(`https://my-node-backend-fcdy.onrender.com/api/products/${productId}/chat/start`, {
                     method: 'POST',
@@ -2569,6 +2710,8 @@ senderNameElement.className = 'message-sender';
             } catch (error) {
                 console.error('Error starting chat:', error);
                 alert(error.message || 'Failed to start chat');
+            } finally {
+                hideLoading();
             }
         }
 
@@ -2869,6 +3012,7 @@ senderNameElement.className = 'message-sender';
         // Load Products
         async function loadProducts() {
             try {
+                showSectionLoading('productsGrid', 'Loading products...');
                 const response = await fetch('https://my-node-backend-fcdy.onrender.com/api/products');
                 const allProductsData = await response.json();
                 // Filter out sold products, only keep available and pending
@@ -2878,6 +3022,10 @@ senderNameElement.className = 'message-sender';
                 renderProducts(allProducts);
             } catch (error) {
                 console.error('Error loading products:', error);
+                const grid = document.getElementById('productsGrid');
+                grid.innerHTML = '<p style="text-align: center; color: #666;">Error loading products. Please try again.</p>';
+            } finally {
+                hideSectionLoading('productsGrid');
             }
         }
 
@@ -3303,8 +3451,11 @@ senderNameElement.className = 'message-sender';
             // Initialize notification counter
             updateNotificationCounter();
 
-            // Load initial products
-            loadProducts();
+            // Load initial products with loading
+            showLoading('Loading products...');
+            loadProducts().finally(() => {
+                hideLoading();
+            });
 
             // Setup image upload functionality
             setupImageUpload();
@@ -3443,6 +3594,7 @@ senderNameElement.className = 'message-sender';
             }
             
             try {
+                showLoading('Adding product...');
                 const response = await fetch('https://my-node-backend-fcdy.onrender.com/api/products', {
                     method: 'POST',
                     headers: {
@@ -3467,6 +3619,8 @@ senderNameElement.className = 'message-sender';
             } catch (error) {
                 console.error('Error:', error);
                 alert('Failed to add product');
+            } finally {
+                hideLoading();
             }
         };
 
@@ -3482,6 +3636,7 @@ senderNameElement.className = 'message-sender';
         // Function to load unread messages on page load
         async function loadUnreadMessages() {
             try {
+                showLoading('Loading notifications...');
                 const response = await fetch('https://my-node-backend-fcdy.onrender.com/api/products/unread-messages', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -3521,6 +3676,8 @@ senderNameElement.className = 'message-sender';
                 }
             } catch (error) {
                 console.error('Error loading unread messages:', error);
+            } finally {
+                hideLoading();
             }
         }
 
